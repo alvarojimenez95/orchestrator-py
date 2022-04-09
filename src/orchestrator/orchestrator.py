@@ -1,7 +1,7 @@
 from datetime import datetime
 import requests
 import json
-from pprint import pprint
+
 
 from orchestrator.exceptions import OrchestratorAuthException
 
@@ -38,10 +38,6 @@ class Orchestrator(object):
             self.folder_id = folder_id
             self.session = session
 
-    @staticmethod
-    def _set_expiracy_date(sec: str):
-        pass
-
     def get_token(self):
         body = {
             "grant_type": "refresh_token",
@@ -58,4 +54,4 @@ class Orchestrator(object):
             self._access_token = token
             self._token_expires = expiracy
         except Exception as err:
-            pprint(err)
+            print(err)
