@@ -88,11 +88,11 @@ def test_assets_ids():
     pprint(data)
 
 
-# test_folder()
-# test_single_folder()
-# test_queues()
-# test_single_queue()
-# test_queue_processing_recrods()
-# test_assets()
-# test_assets_ids()
+test_folder()
+test_single_folder()
+test_queues()
+test_single_queue()
+test_queue_processing_recrods()
+test_assets()
+test_assets_ids()
 test_init()
