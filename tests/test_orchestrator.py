@@ -113,6 +113,7 @@ def test_queue_items_by_queue_id():
     client = Queue(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
     data = client.get_queue_items(QUEUE_ID)
+    print(len(data))
     pprint(data)
 
 
