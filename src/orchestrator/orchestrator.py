@@ -68,7 +68,7 @@ class Orchestrator(object):
             raise OrchestratorAuthException(value="folder id", message="folder cannot be null")
         return {"X-UIPATH-OrganizationUnitId": f"{self.folder_id}"}
 
-    def _internal_call(self, method, endpoint, **kwargs):
+    def _internal_call(self, method, endpoint, *args, **kwargs):
         self._get_token()
         headers = self._auth_header()
         encoded_params = None
@@ -83,10 +83,15 @@ class Orchestrator(object):
         except Exception as err:
             print(err)
 
-    def _get(self, endpoint, *args, **kwargs):
+    def _get(self, url, *args, **kwargs):
         if args:
             kwargs.update(args)
-        return self._internal_call("GET", endpoint, args, kwargs)
+        return self._internal_call("GET", url, args, kwargs)
+
+    def _post(self, url, *args, **kwargs):
+        if args:
+            kwargs.update(args)
+        return self._internal_call("GET", url, args, kwargs)
 
 
 class Folder(Orchestrator):
@@ -103,23 +108,26 @@ class Folder(Orchestrator):
         else:
             self.session = requests.Session()
 
-    def get_all_folders(self, filter=None, expand=None, select=None):
+    def get_all_folders(self, options=None):
         """
             Gets all the folders from a given Organization Unit
         """
         endpoint = "/Folders"
-        url = f"{self.base_url}{endpoint}"
-        print(url)
+        if options:
+            query_params = urlencode(options)
+            url = f"{self.base_url}{endpoint}?{query_params}"
+        else:
+            url = f"{self.base_url}{endpoint}"
         data = self._get(url)
         return data['value']
 
-    def get_folder_ids(self, filter=None, expand=None, select=None):
+    def get_folder_ids(self, options=None):
         """
             Returns a python list of dictionaries
             with all the folder names as keys
             and the folder ids as values
         """
-        folders = self.get_all_folders()
+        folders = self.get_all_folders(options)
         ids = []
         for folder in folders:
             ids.append({folder['DisplayName']: folder['Id']})
@@ -165,7 +173,7 @@ class Queue(Orchestrator):
             query_params = urlencode(options)
             url = f"{self.base_url}{endpoint}?{query_params}"
         else:
-            url = f"{self.base_url}{endpoint}?{query_params}"
+            url = f"{self.base_url}{endpoint}"
         data = self._get(url)
         return data['value']
 
@@ -177,11 +185,14 @@ class Queue(Orchestrator):
             :options dictionary for odata options
 
         """
-        queues = self.get_all_queues(options)['value']
+        queues = self.get_all_queues(options)
         queue_ids = [{queue['Name']: queue['Id']} for queue in queues]
         return queue_ids
 
     def get_queue(self, queue_id):
+        """
+            Gets a single queue by queue id
+        """
         endpoint = f"/QueueDefinitions({queue_id})"
         url = f"{self.base_url}{endpoint}"
         data = self._get(url)
@@ -221,6 +232,56 @@ class Queue(Orchestrator):
             url = f"{self.base_url}{endpoint}{uipath_svc}"
         data = self._get(url)
         return data['value']
+
+    def get_items(self, options=None):
+        """
+            Gets all the queue items from a folder
+
+            Parameters
+                :options dict for odata options
+        """
+        endpoint = "/QueueItems"
+        if options:
+            query_params = urlencode(options)
+            url = f"{self.base_url}{endpoint}?{query_params}"
+        else:
+            url = f"{self.base_url}{endpoint}"
+        data = self._get(url)
+        return data['value']
+
+    def get_item(self, item_id):
+        """
+            Gets a single item by item id
+
+            Parameters:
+
+            :param item_id : item id
+        """
+        endpoint = f"/QueueItems({item_id})"
+        url = f"{self.base_url}{endpoint}"
+        return self._get(url)
+
+    def get_queue_items(self, queue_id, options=None):
+        """
+            Returns a list of queue items belonging to a given queue
+            Parameters:
+                :param queue_id : the queue id
+                :param options dict: odata options, $filter tag will be overwritten
+        """
+        odata_filter = {"$filter": "QueueDefinitionId eq {}".format(queue_id)}
+        if options:
+            options.update(odata_filter)
+        else:
+            options = odata_filter
+        return self.get_items(options=options)
+
+    def get_queue_items_ids(self, options=None):
+        """
+            Returns a list of dictionaries where the key value
+            pairse ar <queue_id : item_id>
+        """
+        queue_items = self.get_queue_items(options)
+        return [{item['QueueDefinitionId']: item['Id']} for item in queue_items]
 
 
 class Asset(Orchestrator):
