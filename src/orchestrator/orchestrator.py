@@ -68,8 +68,7 @@ class Orchestrator(object):
             raise OrchestratorAuthException(value="folder id", message="folder cannot be null")
         return {"X-UIPATH-OrganizationUnitId": f"{self.folder_id}"}
 
-    def _internal_call(self, method, endpoint, *args, **kwargs):
-
+    def _internal_call(self, method, endpoint, **kwargs):
         self._get_token()
         headers = self._auth_header()
         encoded_params = None
@@ -157,6 +156,7 @@ class Queue(Orchestrator):
 
     def get_all_queues(self, options=None):
         """
+            Parameters:
             :param options (dict(str, any)) dictionary of 
             filtering odata options
         """
