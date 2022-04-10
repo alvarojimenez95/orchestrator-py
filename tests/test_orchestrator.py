@@ -135,5 +135,5 @@ def test_get_queue_item():
 # test_queue_items()
 # test_queue_item_ids()
 # test_queues_ids()
-# test_queue_items_by_queue_id()
+test_queue_items_by_queue_id()
 test_get_queue_item()
