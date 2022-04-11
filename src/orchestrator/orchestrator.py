@@ -268,19 +268,18 @@ class Queue(Orchestrator):
                 :param queue_id : the queue id
                 :param options dict: odata options, $filter tag will be overwritten
         """
-        odata_filter = {"$filter": "QueueDefinitionId eq {}".format(queue_id)}
+        odata_filter = {"$Filter": f"QueueDefinitionId eq {queue_id}"}
         if options:
-            options.update(odata_filter)
-        else:
-            options = odata_filter
-        return self.get_items(options=options)
+            odata_filter.update(options)
 
-    def get_queue_items_ids(self, options=None):
+        return self.get_items(options=odata_filter)
+
+    def get_queue_items_ids(self, queue_id, options=None):
         """
             Returns a list of dictionaries where the key value
             pairse ar <queue_id : item_id>
         """
-        queue_items = self.get_queue_items(options)
+        queue_items = self.get_queue_items(queue_id, options=options)
         return [{item['QueueDefinitionId']: item['Id']} for item in queue_items]
 
 

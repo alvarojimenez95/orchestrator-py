@@ -1,4 +1,5 @@
 from orchestrator.orchestrator import Orchestrator, Folder, Queue, Asset
+
 from dotenv import load_dotenv
 import os
 from pprint import pprint
@@ -20,6 +21,9 @@ def test_init():
 
 
 def test_folder():
+    """
+    Gets a list of all folders
+    """
     client = Folder(client_id=CLIENT_ID,
                     refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     data = client.get_all_folders()
@@ -27,6 +31,9 @@ def test_folder():
 
 
 def test_folder_list():
+    """
+    List of dictionaries folder_name - folder_id
+    """
     client = Folder(client_id=CLIENT_ID,
                     refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     data = client.get_folder_ids()
@@ -34,6 +41,9 @@ def test_folder_list():
 
 
 def test_single_folder():
+    """
+    Returns a single folder
+    """
     client = Folder(client_id=CLIENT_ID,
                     refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     data = client.get_folder(folder_id=FOLDER_ID)
@@ -41,6 +51,9 @@ def test_single_folder():
 
 
 def test_queues_ids():
+    """
+     List of dictionaries queue_name - queue_id
+    """
     client = Queue(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
     data = client.get_queue_ids()
@@ -48,6 +61,9 @@ def test_queues_ids():
 
 
 def test_queues():
+    """
+        Returns a list of all queues
+    """
     client = Queue(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
     data = client.get_all_queues(options={"$top": "2", "$orderby": "Id asc"})
@@ -56,28 +72,40 @@ def test_queues():
 
 
 def test_single_queue():
+    """
+        Gets a single queue by id
+    """
     client = Queue(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
     data = client.get_queue(QUEUE_ID)
     pprint(data)
 
 
-def test_processing_recrods():
+def test_queue_processing_recrods():
+    """
+        Gets all processing records for a given queue id
+    """
     client = Queue(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
     data = client.get_processing_records(queue_id=QUEUE_ID, num_days=30)
     pprint(data)
 
 
-def test_queue_processing_recrods():
+def test_processing_recrods():
+    """
+        Gets all processing records
+    """
     client = Queue(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
     data = client.get_queue_processing_records()
+    pprint(data)
     pprint(len(data))
 
 
 def test_assets():
-
+    """
+        Gets all assets
+    """
     client = Asset(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
     data = client.get_all_assets()
@@ -85,6 +113,9 @@ def test_assets():
 
 
 def test_assets_ids():
+    """
+        Returns a dictionary asset_name -- asset_id
+    """
     client = Asset(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
     data = client.get_asset_ids()
@@ -92,48 +123,63 @@ def test_assets_ids():
 
 
 def test_queue_items():
+    """
+    Gets all items (allows for options)
+    """
     client = Queue(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
-    data = client.get_items(options={"$top": "2", "$filter": "QueueDefinitionId eq {}".format(QUEUE_ID)})
+    data = client.get_items(options={"$filter": "QueueDefinitionId eq 95235", "$top": "2"})
     pprint(data)
-    item = data[0]
-    pprint(item)
-    # pprint(item.keys())
-    pprint(item['Status'])
+    pprint(len(data))
 
 
 def test_queue_item_ids():
+    """
+        Returns a list of dictionaries with the 
+        queue id -- item id
+    """
     client = Queue(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
-    data = client.get_queue_items_ids(options={"$top": "10"})
+    data = client.get_queue_items_ids(QUEUE_ID, options={"$top": "2"})
     pprint(data)
 
 
 def test_queue_items_by_queue_id():
+    """
+        Returns a list of items for a given queue id
+    """
     client = Queue(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
-    data = client.get_queue_items(QUEUE_ID)
-    print(len(data))
+    data = client.get_queue_items(QUEUE_ID, options={"$top": "2"})
     pprint(data)
 
 
 def test_get_queue_item():
+    """
+    Gets a queue item by item id
+    """
     client = Queue(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
-    data = client.get_item(ITEM_ID)
+    data = client.get_item(item_id=ITEM_ID)
+
     pprint(data)
 
 
+test_queue_item_ids()
+
+
+# -----------
+# test_get_queue_item()
+# test_queues_ids()
 # test_folder()
 # test_single_folder()
+# test_folder_list()
 # test_queues()
 # test_single_queue()
+# test_processing_recrods()
 # test_queue_processing_recrods()
 # test_assets()
 # test_assets_ids()
 # test_init()
 # test_queue_items()
-# test_queue_item_ids()
-# test_queues_ids()
-test_queue_items_by_queue_id()
-test_get_queue_item()
+# test_queue_items_by_queue_id()
