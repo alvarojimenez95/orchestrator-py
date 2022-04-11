@@ -1,8 +1,10 @@
 from datetime import datetime
 from urllib.parse import urlencode
 import requests
+import random
 import json
-
+import string
+from pprint import pprint
 
 from orchestrator.exceptions import OrchestratorAuthException, OrchestratorMissingParam
 
@@ -42,6 +44,10 @@ class Orchestrator(object):
 
         pass
 
+    @staticmethod
+    def generate_reference():
+        return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
     def _get_token(self):
         body = {
             "grant_type": "refresh_token",
@@ -63,6 +69,10 @@ class Orchestrator(object):
     def _auth_header(self):
         return {"Authorization": f"Bearer {self._access_token}"}
 
+    @staticmethod
+    def _content_header():
+        return {"Content-Type": "application/json"}
+
     def _folder_header(self):
         if not self.folder_id:
             raise OrchestratorAuthException(value="folder id", message="folder cannot be null")
@@ -71,27 +81,31 @@ class Orchestrator(object):
     def _internal_call(self, method, endpoint, *args, **kwargs):
         self._get_token()
         headers = self._auth_header()
-        encoded_params = None
-
+        if method == "POST":
+            headers.update(self._content_header())
         if self.folder_id:
             headers.update(self._folder_header())
         try:
-            print(endpoint)
-            r = requests.request(method, endpoint, data=json.dumps(kwargs), params=encoded_params, headers=headers)
-            print(r)
+            # print(endpoint)
+            if kwargs:
+                pprint(kwargs)
+                item_data = kwargs['body']['body']
+                print(json.dumps(item_data))
+                r = requests.request(method, endpoint, data=json.dumps(item_data), headers=headers)
+            else:
+                r = requests.request(method, endpoint, headers=headers)
+            pprint(r)
             return r.json()
         except Exception as err:
             print(err)
 
     def _get(self, url, *args, **kwargs):
-        if args:
-            kwargs.update(args)
+
         return self._internal_call("GET", url, args, kwargs)
 
     def _post(self, url, *args, **kwargs):
-        if args:
-            kwargs.update(args)
-        return self._internal_call("GET", url, args, kwargs)
+        # pprint(kwargs)
+        return self._internal_call("POST", url, args, body=kwargs)
 
 
 class Folder(Orchestrator):
@@ -134,7 +148,7 @@ class Folder(Orchestrator):
         return ids
 
     def get_folder(self, folder_id):
-        """Returns a single folder based on 
+        """Returns a single folder based on
             its folder id
         """
         endpoint = f"/Folders({folder_id})"
@@ -165,7 +179,7 @@ class Queue(Orchestrator):
     def get_all_queues(self, options=None):
         """
             Parameters:
-            :param options (dict(str, any)) dictionary of 
+            :param options (dict(str, any)) dictionary of
             filtering odata options
         """
         endpoint = "/QueueDefinitions"
@@ -217,7 +231,7 @@ class Queue(Orchestrator):
 
     def get_processing_records(self, queue_id, num_days=0, options=None):
         """
-            Returns a list of processing records for a given 
+            Returns a list of processing records for a given
             queue and a certain number of days (0 by default)
 
             :options dictionary for odata options
@@ -282,6 +296,29 @@ class Queue(Orchestrator):
         queue_items = self.get_queue_items(queue_id, options=options)
         return [{item['QueueDefinitionId']: item['Id']} for item in queue_items]
 
+    def create_queue_item(self, queue_id, specific_content=None, priority="Low", options=None):
+        """
+            options should be a dictionary for the
+            Specific Content of the queue_item
+        """
+        endpoint = "/Queues"
+        uipath_svc = "/UiPathODataSvc.AddQueueItem"
+        url = f"{self.base_url}{endpoint}{uipath_svc}"
+        # if not options:
+        #     raise OrchestratorMissingParam(value="options", message="options cannot be null")
+        queue_name = self.get_queue(queue_id=queue_id)["Name"]
+        format_body_queue = {
+            "itemData": {
+                "Priority": priority,
+                "Name": queue_name,
+                "SpecificContent": specific_content,
+                "Reference": self.generate_reference(),
+                "Progress": "New"
+            }
+        }
+        pprint(format_body_queue)
+        return self._post(url, body=format_body_queue)
+
 
 class Asset(Orchestrator):
     def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, session=None):
@@ -298,7 +335,7 @@ class Asset(Orchestrator):
 
     def get_all_assets(self, options=None):
         """
-            Returns list of assets 
+            Returns list of assets
             :options dict of odata filter options
         """
         endpoint = "/Assets"

@@ -3,6 +3,7 @@ from orchestrator.orchestrator import Orchestrator, Folder, Queue, Asset
 from dotenv import load_dotenv
 import os
 from pprint import pprint
+import json
 
 load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -11,6 +12,7 @@ TENANT_NAME = os.getenv('TENANT_NAME')
 FOLDER_ID = os.getenv('FOLDER_ID')
 QUEUE_ID = os.getenv('QUEUE_ID')
 ITEM_ID = os.getenv('ITEM_ID')
+FOLDER_PRE_ID = os.getenv('FOLDER_PRE_ID')
 
 
 def test_init():
@@ -128,7 +130,7 @@ def test_queue_items():
     """
     client = Queue(client_id=CLIENT_ID,
                    refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
-    data = client.get_items(options={"$filter": "QueueDefinitionId eq 95235", "$top": "2"})
+    data = client.get_items(options={"$filter": "QueueDefinitionId eq 100093", "$top": "2"})
     pprint(data)
     pprint(len(data))
 
@@ -165,9 +167,24 @@ def test_get_queue_item():
     pprint(data)
 
 
-test_queue_item_ids()
+def test_create_item():
+    client = Queue(client_id=CLIENT_ID,
+                   refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
+    hiring = {
+        "name": "Pepa",
+        "surname": "Perez"
+    }
+    specific_content = {
+        "prenom": "Perez",
+        "nom": "Pepe",
+        "anael_id": "12345",
+        "hiring_data": json.dumps(hiring)
+    }
+    data = client.create_queue_item(queue_id=100093, specific_content=specific_content)
+    pprint(data)
 
 
+test_create_item()
 # -----------
 # test_get_queue_item()
 # test_queues_ids()
@@ -183,3 +200,4 @@ test_queue_item_ids()
 # test_init()
 # test_queue_items()
 # test_queue_items_by_queue_id()
+# test_queue_item_ids()
