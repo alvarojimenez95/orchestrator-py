@@ -137,7 +137,7 @@ def test_queue_items():
 
 def test_queue_item_ids():
     """
-        Returns a list of dictionaries with the 
+        Returns a list of dictionaries with the
         queue id -- item id
     """
     client = Queue(client_id=CLIENT_ID,
@@ -180,11 +180,33 @@ def test_create_item():
         "anael_id": "12345",
         "hiring_data": json.dumps(hiring)
     }
-    data = client.create_queue_item(queue_id=100093, specific_content=specific_content)
+    data = client.create_queue_item(100093, specific_content=specific_content)
     pprint(data)
 
 
-test_create_item()
+def test_create_items():
+    client = Queue(client_id=CLIENT_ID,
+                   refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME, folder_id=FOLDER_ID)
+    # hiring = {
+    #     "name": "Pepa",
+    #     "surname": "Perez"
+    # }
+    specific_content1 = {
+        "prenom": "Perez",
+        "nom": "Pepe",
+        "anael_id": "12345"
+        # "hiring_data": json.dumps(hiring)
+    }
+    specific_content2 = {
+        "prenom": "Perez",
+        "nom": "Antonio",
+        "anael_id": "12345"
+        # "hiring_data": json.dumps(hiring)
+    }
+    data = client.bulk_create_items(100093, specific_contents=[specific_content1, specific_content2])
+    pprint(data)
+
+
 # -----------
 # test_get_queue_item()
 # test_queues_ids()
@@ -201,3 +223,5 @@ test_create_item()
 # test_queue_items()
 # test_queue_items_by_queue_id()
 # test_queue_item_ids()
+# test_create_item()
+# test_create_items()

@@ -296,16 +296,24 @@ class Queue(Orchestrator):
         queue_items = self.get_queue_items(queue_id, options=options)
         return [{item['QueueDefinitionId']: item['Id']} for item in queue_items]
 
-    def create_queue_item(self, queue_id, specific_content=None, priority="Low", options=None):
+    def create_queue_item(self, queue_id, specific_content=None, priority="Low"):
         """
-            options should be a dictionary for the
-            Specific Content of the queue_item
+            Creates a new Item
+
+            Parameters: 
+                :param queue_id - the queue id 
+                :specific_content - python dictionary of key value pairs. It does not 
+                                    admit nested dictionaries. If you want to be able to 
+                                    pass a dictionary as a key value pair inside the specific
+                                    content attribute, you need to json.dumps(dict) first for it
+                                    to work.
+                :param priority - sets up the priority (Low by default)
         """
         endpoint = "/Queues"
         uipath_svc = "/UiPathODataSvc.AddQueueItem"
         url = f"{self.base_url}{endpoint}{uipath_svc}"
-        # if not options:
-        #     raise OrchestratorMissingParam(value="options", message="options cannot be null")
+        if not specific_content:
+            raise OrchestratorMissingParam(value="specific_content", message="specific content cannot be null")
         queue_name = self.get_queue(queue_id=queue_id)["Name"]
         format_body_queue = {
             "itemData": {
@@ -315,6 +323,43 @@ class Queue(Orchestrator):
                 "Reference": self.generate_reference(),
                 "Progress": "New"
             }
+        }
+        pprint(format_body_queue)
+        return self._post(url, body=format_body_queue)
+
+    def format_specific_content(self, queue_name, sp_content, priority="Low"):
+        formatted_sp_content = {
+            "Name": queue_name,
+            "Priority": priority,
+            "SpecificContent": sp_content,
+            "Reference": self.generate_reference(),
+            "Progress": "New"
+        }
+        return formatted_sp_content
+
+    def bulk_create_items(self, queue_id, specific_contents=None, priority="Low"):
+        """
+            Creates a list of items for a given queue
+
+            Parameters: 
+                :param queue_id - the queue id 
+                :specific_content - python dictionary of key value pairs. It does not 
+                                    admit nested dictionaries. If you want to be able to 
+                                    pass a dictionary as a key value pair inside the specific
+                                    content attribute, you need to json.dumps(dict) first for it
+                                    to work.
+                :param priority - sets up the priority (Low by default)
+        """
+        endpoint = "/Queues"
+        uipath_svc = "/UiPathODataSvc.BulkAddQueueItems"
+        url = f"{self.base_url}{endpoint}{uipath_svc}"
+        if not specific_contents:
+            raise OrchestratorMissingParam(value="specific_contents", message="specific contents cannot be null")
+        queue_name = self.get_queue(queue_id=queue_id)["Name"]
+        format_body_queue = {
+            "commitType": "StopOnFirstFailure",
+            "queueName": queue_name,
+            "queueItems": [self.format_specific_content(queue_name=queue_name, sp_content=sp_content) for sp_content in specific_contents]
         }
         pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
