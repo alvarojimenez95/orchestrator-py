@@ -88,10 +88,10 @@ class Orchestrator(object):
         try:
             # print(endpoint)
             if kwargs:
-                pprint(kwargs)
+                # pprint(kwargs)
                 item_data = kwargs['body']['body']
-                print(json.dumps(item_data))
-                r = requests.request(method, endpoint, data=json.dumps(item_data), headers=headers)
+                # print(json.dumps(item_data))
+                r = requests.request(method, endpoint, json=item_data, headers=headers)
             else:
                 r = requests.request(method, endpoint, headers=headers)
             pprint(r)
@@ -324,7 +324,7 @@ class Queue(Orchestrator):
                 "Progress": "New"
             }
         }
-        pprint(format_body_queue)
+        # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
 
     def format_specific_content(self, queue_name, sp_content, priority="Low"):
@@ -361,7 +361,7 @@ class Queue(Orchestrator):
             "queueName": queue_name,
             "queueItems": [self.format_specific_content(queue_name=queue_name, sp_content=sp_content) for sp_content in specific_contents]
         }
-        pprint(format_body_queue)
+        # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
 
 
