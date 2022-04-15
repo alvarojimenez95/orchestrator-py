@@ -404,10 +404,10 @@ class Queue(Folder):
         """
             Creates a list of items for a given queue
 
-            Parameters: 
-                :param queue_id - the queue id 
-                :specific_content - python dictionary of key value pairs. It does not 
-                                    admit nested dictionaries. If you want to be able to 
+            Parameters:
+                :param queue_id - the queue id
+                :specific_content - python dictionary of key value pairs. It does not
+                                    admit nested dictionaries. If you want to be able to
                                     pass a dictionary as a key value pair inside the specific
                                     content attribute, you need to json.dumps(dict) first for it
                                     to work.
@@ -501,7 +501,7 @@ class QueueItem(Queue):
 
     def last_entry(self):
         """
-            Returns the last entry of the given 
+            Returns the last entry of the given
             queue item
         """
         endpoint = f"/QueueItems({self.id})"
@@ -536,8 +536,8 @@ class QueueItem(Queue):
 
     def events(self):
         """
-            Gets tue item events associated to the current 
-            queue item 
+            Gets tue item events associated to the current
+            queue item
 
             No funciona no se por que
         """
@@ -568,7 +568,7 @@ class QueueItemComment(QueueItem):
 
     def info(self):
         """
-            Returns the info of the current item 
+            Returns the info of the current item
             comment
         """
         endpoint = f"/QueueItemComments({self.item_id})"
@@ -590,39 +590,6 @@ class QueueItemComment(QueueItem):
         endpoint = f"/QueueItemComments({self.item_id})"
         url = f"{self.base_url}{endpoint}"
         return self._put(url, body=body)
-
-
-class Asset(Folder):
-    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, session=None, asset_id=None, asset_name=None):
-        super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, folder_name=folder_name, session=session)
-        if not asset_id:
-            raise OrchestratorMissingParam(value="asset_id",
-                                           message="Required parameter(s) missing: asset_id")
-        self.tenant_name = tenant_name
-        self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
-        self.folder_id = folder_id
-        self.folder_name = folder_name
-        self.id = asset_id
-        self.name = asset_name
-        if session:
-            self.session = session
-        else:
-            self.session = requests.Session()
-
-    def info(self):
-        endpoint = f"/Assets({self.asset_id})"
-        url = f"{self.base_url}{endpoint}"
-        return self._get(url)
-
-    def edit(self, body=None):
-        endpoint = f"/Assets({self.asset_id})"
-        url = f"{self.base_url}{endpoint}"
-        return self._put(url, body=body)
-
-    def delete(self, body=None):
-        endpoint = f"/Assets({self.asset_id})"
-        url = f"{self.base_url}{endpoint}"
-        return self._delete(url, body=body)
 
 
 class ProcessSchedule(Orchestrator):
@@ -653,7 +620,7 @@ class ProcessSchedule(Orchestrator):
 
     def get_schedule_ids(self, options=None):
         """
-            Returns a list of dictionaries 
+            Returns a list of dictionaries
                 name -- schedule_id
         """
         process_schedules = self.get_all_schedules(options=options)
@@ -715,7 +682,7 @@ class Process(Orchestrator):
 
     def get_processes_key(self, options=None):
         """
-            Returns a dictionary 
+            Returns a dictionary
                 process title -- process key
         """
         processes = self.get_all_processes(options=options)
@@ -738,3 +705,36 @@ class Process(Orchestrator):
         uipath_svc = f"/UiPath.Server.Configuration.OData.GetProcessVersions(processId='{process_key}')"
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         return self._get(url)
+
+
+class Asset(Folder):
+    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, session=None, asset_id=None, asset_name=None):
+        super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, folder_name=folder_name, session=session)
+        if not asset_id:
+            raise OrchestratorMissingParam(value="asset_id",
+                                           message="Required parameter(s) missing: asset_id")
+        self.tenant_name = tenant_name
+        self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
+        self.folder_id = folder_id
+        self.folder_name = folder_name
+        self.id = asset_id
+        self.name = asset_name
+        if session:
+            self.session = session
+        else:
+            self.session = requests.Session()
+
+    def info(self):
+        endpoint = f"/Assets({self.asset_id})"
+        url = f"{self.base_url}{endpoint}"
+        return self._get(url)
+
+    def edit(self, body=None):
+        endpoint = f"/Assets({self.asset_id})"
+        url = f"{self.base_url}{endpoint}"
+        return self._put(url, body=body)
+
+    def delete(self, body=None):
+        endpoint = f"/Assets({self.asset_id})"
+        url = f"{self.base_url}{endpoint}"
+        return self._delete(url, body=body)
