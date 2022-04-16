@@ -1,6 +1,7 @@
 from orchestrator.orchestrator_http import OrchestratorHTTP
 from orchestrator.exceptions import OrchestratorMissingParam
 import requests
+from urllib.parse import urlencode
 
 
 class QueueItem(OrchestratorHTTP):
@@ -22,6 +23,9 @@ class QueueItem(OrchestratorHTTP):
             self.session = session
         else:
             self.session = requests.Session()
+
+    def __str__(self):
+        return f"Item Id: {self.id} \nQueue: {self.queue_name} \nFolder: {self.folder_name}"
 
     def content(self):
         info = self.info()

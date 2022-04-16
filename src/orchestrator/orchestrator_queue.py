@@ -28,7 +28,7 @@ class Queue(OrchestratorHTTP):
             self.session = requests.Session()
 
     def __str__(self):
-        return f"Queue Id: {self.id} \nQueue Name: {self.name} \n Folder Id: {self.folder_id} \nFolder Name: {self.folder_name}"
+        return f"Queue Id: {self.id} \nQueue Name: {self.name} \nFolder Id: {self.folder_id} \nFolder Name: {self.folder_name}"
 
     def info(self):
         """
@@ -39,10 +39,11 @@ class Queue(OrchestratorHTTP):
         data = self._get(url)
         return data
 
-    def get_processing_records(self, num_days=0, options=None):
+    def get_processing_records(self, num_days=1, options=None):
         """
             Returns a list of processing records for a given
-            queue and a certain number of days (0 by default)
+            queue and a certain number of days (by default, hourly reports
+            from the last day)
 
             :options dictionary for odata options
         """
@@ -76,6 +77,7 @@ class Queue(OrchestratorHTTP):
             Parameters:
                 :param queue_id : the queue id
                 :param options dict: odata options, $filter tag will be overwritten
+            Maximum number of results: 1000
         """
         endpoint = "/QueueItems"
         odata_filter = {"$Filter": f"QueueDefinitionId eq {self.id}"}

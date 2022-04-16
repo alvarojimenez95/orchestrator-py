@@ -1,6 +1,7 @@
 from orchestrator.orchestrator_http import OrchestratorHTTP
 from orchestrator.orchestrator_asset import Asset
 from orchestrator.orchestrator_queue import Queue
+from orchestrator.orchestrator_process_schedule import ProcessSchedule
 from orchestrator.exceptions import OrchestratorMissingParam
 from urllib.parse import urlencode
 import requests
@@ -123,3 +124,46 @@ class Folder(OrchestratorHTTP):
 
     def create_asset(self, body=None):
         pass
+
+    def get_process_schedules(self, options=None):
+        endpoint = "/ProcessSchedules"
+        if options:
+            query_params = urlencode(options)
+            url = f"{self.base_url}{endpoint}?{query_params}"
+        else:
+            url = f"{self.base_url}{endpoint}"
+        data = self._get(url)
+        filt_data = data["value"]
+        return [ProcessSchedule(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, process["Id"], process["Name"]) for process in filt_data]
+
+    def get_schedule_ids(self, options=None):
+        """
+            Returns a list of dictionaries
+                name -- schedule_id
+        """
+        process_schedules = self.get_all_schedules(options=options)
+        ids = {}
+        for schedule in process_schedules:
+            ids.update({schedule.id: schedule.name})
+        return ids
+
+    def get_sessions(self, options=None):
+        """
+            Gets all the sessions for the current folder
+        """
+        endpoint = "/Sessions"
+        if options:
+            query_params = urlencode(options)
+            url = f"{self.base_url}{endpoint}?{query_params}"
+        else:
+            url = f"{self.base_url}{endpoint}"
+        return self._get(url)["value"]
+
+    def get_machine_runtime_sessions(self):
+        """
+            No se por que no va
+        """
+        endpoint = "/Sessions"
+        uipath_svc = "UiPath.Server.Configuration.OData.GetMachineSessionRuntimesByFolderId(folderId={self.id})"
+        url = f"{self.base_url}{endpoint}{uipath_svc}"
+        return self._get(url)
