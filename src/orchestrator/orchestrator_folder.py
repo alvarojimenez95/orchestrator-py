@@ -1,7 +1,7 @@
 from orchestrator.orchestrator_http import OrchestratorHTTP
 from orchestrator.orchestrator_asset import Asset
-from orchestrator.queue import Queue
-from orchestrator.process import ProcessSchedule
+from orchestrator.orchestrator_queue import Queue
+from orchestrator.orchestrator_process_schedule import ProcessSchedule
 from orchestrator.exceptions import OrchestratorMissingParam
 from urllib.parse import urlencode
 import requests
@@ -58,7 +58,7 @@ class Folder(OrchestratorHTTP):
             :options dictionary for odata options
 
         """
-        queues = self.get_all_queues(options)
+        queues = self.get_queues(options)
         ids = {}
         for queue in queues:
             ids.update({queue.id: queue.name})
@@ -111,7 +111,7 @@ class Folder(OrchestratorHTTP):
                 :options dict of odata filter options
         """
 
-        assets = self.get_all_assets(options)
+        assets = self.get_assets(options)
         ids = {}
         for asset in assets:
             ids.update({asset.id: asset.name})

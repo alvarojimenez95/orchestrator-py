@@ -2,7 +2,7 @@ from orchestrator.exceptions import OrchestratorMissingParam
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
 from urllib.parse import urlencode
-from .orchestrator_queue_item import QueueItem
+from orchestrator.orchestrator_queue_item import QueueItem
 
 __all__ = ["Queue"]
 

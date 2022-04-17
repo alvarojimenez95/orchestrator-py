@@ -4,7 +4,7 @@ import requests
 import json
 from urllib.parse import urlencode
 from orchestrator.orchestrator_folder import Folder
-from orchestrator.process import Process
+from orchestrator.orchestrator_process import Process
 
 
 __all__ = ["Orchestrator"]
@@ -76,7 +76,7 @@ class Orchestrator(OrchestratorHTTP):
             with all the folder names as keys
             and the folder ids as values
         """
-        folders = self.get_all_folders(options)
+        folders = self.get_folders(options)
         ids = {}
         for folder in folders:
             ids.update({folder.id: folder.name})
@@ -104,7 +104,7 @@ class Orchestrator(OrchestratorHTTP):
             url = f"{self.base_url}{endpoint}{uipath_svc}"
         return self._get(url)
 
-    def get_all_processes(self, options=None):
+    def get_processes(self, options=None):
         endpoint = "/Processes"
         if options:
             query_params = urlencode(options)
@@ -119,7 +119,7 @@ class Orchestrator(OrchestratorHTTP):
             Returns a dictionary
                 process title -- process key
         """
-        processes = self.get_all_processes(options=options)
+        processes = self.get_processes(options=options)
         ids = {}
         for process in processes:
             ids.update({process.key: process.title})
