@@ -3,6 +3,8 @@ from orchestrator.exceptions import OrchestratorMissingParam
 from urllib.parse import urlencode
 import requests
 
+__all__ = ["Process"]
+
 
 class Process(OrchestratorHTTP):
     def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, session=None, process_id=None, process_title=None, process_version=None, process_key=None):

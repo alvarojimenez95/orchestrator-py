@@ -18,17 +18,32 @@ class OrchestratorHTTP(object):
 
     def __init__(
         self,
-        client_id,
-        refresh_token,
-        tenant_name,
+        client_id=None,
+        refresh_token=None,
+        tenant_name=None,
         folder_id=None,
-        session=None
+        session=None,
+        file=None
 
     ):
         if not client_id or not refresh_token:
-            raise OrchestratorAuthException(
-                value=None, message="client id and refresh token cannot be left empty"
-            )
+            if file:
+                f = open(file)
+                try:
+                    data = json.load(f)
+                    self.client_id = data["client_id"]
+                    self.refresh_token = data["refresh_token"]
+                    self.tenant_name = data["tenant_name"]
+                    self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
+                    self.folder_id = data["folder_id"]
+                except KeyError as err:
+                    print(err)
+                    raise
+            else:
+                raise OrchestratorAuthException(
+                    value=None, message="client id and refresh token cannot be left empty"
+                )
+
         else:
             self.client_id = client_id
             self.refresh_token = refresh_token

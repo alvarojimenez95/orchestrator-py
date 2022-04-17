@@ -1,33 +1,51 @@
 from http import client
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
+import json
 from urllib.parse import urlencode
 from orchestrator.orchestrator_folder import Folder
-from orchestrator.orchestrator_process import Process
+from orchestrator.process import Process
+
+
+__all__ = ["Orchestrator"]
 
 
 class Orchestrator(OrchestratorHTTP):
     def __init__(
         self,
-        client_id,
-        refresh_token,
-        tenant_name,
+        client_id=None,
+        refresh_token=None,
+        tenant_name=None,
         folder_id=None,
-        session=None
+        session=None,
+        file=None
 
     ):
-        super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
+
+        super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session, file=file)
         # if not client_id or not refresh_token:
         #     raise OrchestratorAuthException(
         #         value=None, message="client id and refresh token cannot be left empty"
         #     )
         # else:
         #     self.client_id = client_id
-        self.client_id = client_id
-        self.refresh_token = refresh_token
-        self.folder_id = folder_id
-        self.tenant_name = tenant_name
-        self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
+        if file:
+            self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
+
+            try:
+                f = open(file)
+                data = json.load(f)
+                self.client_id = data["client_id"]
+                self.refresh_token = data["refresh_token"]
+                self.tenant_name = data["tenant_name"]
+            except KeyError:
+                raise
+        else:
+            self.client_id = client_id
+            self.refresh_token = refresh_token
+            self.tenant_name = tenant_name
+            self.folder_id = folder_id
+            self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
         if session:
             print("session set")
             self.session = session
@@ -38,7 +56,7 @@ class Orchestrator(OrchestratorHTTP):
     def __str__(self):
         return f"Folder Id: {self.folder_id} \nTenant: {self.tenant_name}"
 
-    def get_all_folders(self, options=None):
+    def get_folders(self, options=None):
         """
             Gets all the folders from a given Organization Unit
         """

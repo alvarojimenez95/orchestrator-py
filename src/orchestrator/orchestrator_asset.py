@@ -26,11 +26,11 @@ class Asset(OrchestratorHTTP):
         return self._get(url)
 
     def edit(self, body=None):
-        endpoint = f"/Assets({self.asset_id})"
+        endpoint = f"/Assets({self.id})"
         url = f"{self.base_url}{endpoint}"
         return self._put(url, body=body)
 
     def delete(self, body=None):
-        endpoint = f"/Assets({self.asset_id})"
+        endpoint = f"/Assets({self.id})"
         url = f"{self.base_url}{endpoint}"
         return self._delete(url, body=body)

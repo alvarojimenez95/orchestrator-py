@@ -2,7 +2,9 @@ from orchestrator.exceptions import OrchestratorMissingParam
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
 from urllib.parse import urlencode
-from orchestrator.orchestrator_queue_item import QueueItem
+from .orchestrator_queue_item import QueueItem
+
+__all__ = ["Queue"]
 
 
 class Queue(OrchestratorHTTP):
@@ -119,11 +121,10 @@ class Queue(OrchestratorHTTP):
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         if not specific_content:
             raise OrchestratorMissingParam(value="specific_content", message="specific content cannot be null")
-        queue_name = self.get_queue(queue_id=queue_id)["Name"]
         format_body_queue = {
             "itemData": {
                 "Priority": priority,
-                "Name": queue_name,
+                "Name": self.name,
                 "SpecificContent": specific_content,
                 "Reference": self.generate_reference(),
                 "Progress": "New"
@@ -160,11 +161,10 @@ class Queue(OrchestratorHTTP):
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         if not specific_contents:
             raise OrchestratorMissingParam(value="specific_contents", message="specific contents cannot be null")
-        queue_name = self.get_queue(queue_id=queue_id)["Name"]
         format_body_queue = {
             "commitType": "StopOnFirstFailure",
-            "queueName": queue_name,
-            "queueItems": [self._format_specific_content(queue_name=queue_name, sp_content=sp_content) for sp_content in specific_contents]
+            "queueName": self.name,
+            "queueItems": [self._format_specific_content(queue_name=self.name, sp_content=sp_content) for sp_content in specific_contents]
         }
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)

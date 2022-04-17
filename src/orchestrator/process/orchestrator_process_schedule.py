@@ -1,7 +1,8 @@
-from orchestrator.orchestrator import OrchestratorHTTP
+from orchestrator.orchestrator_http import OrchestratorHTTP
 from orchestrator.exceptions import OrchestratorMissingParam
-from urllib.parse import urlencode
 import requests
+
+__all__ = ["ProcessSchedule"]
 
 
 class ProcessSchedule(OrchestratorHTTP):

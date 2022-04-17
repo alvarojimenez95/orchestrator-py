@@ -1,7 +1,7 @@
 from orchestrator.orchestrator_http import OrchestratorHTTP
 from orchestrator.orchestrator_asset import Asset
-from orchestrator.orchestrator_queue import Queue
-from orchestrator.orchestrator_process_schedule import ProcessSchedule
+from orchestrator.queue import Queue
+from orchestrator.process import ProcessSchedule
 from orchestrator.exceptions import OrchestratorMissingParam
 from urllib.parse import urlencode
 import requests
@@ -34,7 +34,7 @@ class Folder(OrchestratorHTTP):
         data = self._get(url)
         return data
 
-    def get_all_queues(self, options=None):
+    def get_queues(self, options=None):
         """
             Parameters:
             :param options (dict(str, any)) dictionary of
@@ -64,7 +64,7 @@ class Folder(OrchestratorHTTP):
             ids.update({queue.id: queue.name})
         return ids
 
-    def get_queue_processing_records(self, options=None):
+    def get_processing_records(self, options=None):
         """
             Returns a list of queue processing records for all the queues
 
@@ -85,7 +85,7 @@ class Folder(OrchestratorHTTP):
         queues = self.get_queue_ids()
         return Queue(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, queues[queue_id], queue_id=queue_id)
 
-    def get_all_assets(self, options=None):
+    def get_assets(self, options=None):
         """
             Returns list of assets
             :options dict of odata filter options
@@ -141,7 +141,7 @@ class Folder(OrchestratorHTTP):
             Returns a list of dictionaries
                 name -- schedule_id
         """
-        process_schedules = self.get_all_schedules(options=options)
+        process_schedules = self.get_process_schedules(options=options)
         ids = {}
         for schedule in process_schedules:
             ids.update({schedule.id: schedule.name})

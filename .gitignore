@@ -128,3 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+dummy_credentials.json
+*.ipynb

@@ -3,6 +3,8 @@ from orchestrator.exceptions import OrchestratorMissingParam
 import requests
 from urllib.parse import urlencode
 
+__all__ = ["QueueItem"]
+
 
 class QueueItem(OrchestratorHTTP):
     def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, queue_name=None, queue_id=None, session=None, item_id=None):
@@ -89,7 +91,7 @@ class QueueItem(OrchestratorHTTP):
         """
         if not status:
             raise OrchestratorMissingParam(value="status", message="status cannot be None")
-        endpoint = f"/QueueItems({self.self.id})"
+        endpoint = f"/QueueItems({self.id})"
         uipath_svc = "/UiPathODataSvc.SetTransactionProgress"
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         body = {
