@@ -2,6 +2,7 @@ from orchestrator.orchestrator_http import OrchestratorHTTP
 from orchestrator.exceptions import OrchestratorMissingParam
 import requests
 from urllib.parse import urlencode
+import json
 
 __all__ = ["QueueItem"]
 
@@ -84,7 +85,7 @@ class QueueItem(OrchestratorHTTP):
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         return self._get(url)["value"]
 
-    def update_status(self, status=None):
+    def set_transaction_progress(self, status=None):
         """
             Updates the progress field of a given queue
             item (note: it must be already In Progress)
@@ -98,6 +99,18 @@ class QueueItem(OrchestratorHTTP):
             "progress": status
         }
         return self._post(url, body=body)
+
+    def set_transaction_status(self, success: bool, reason=None, exception_type=None):
+        endpoint = f"/Queues({self.id})"
+        uipath_svc = "/UiPathODataSvc.SetTransactionResult"
+        transaction_body = {
+            "transactionResult": {
+                "IsSuccessful": True,
+
+            }
+        }
+        url = f"{self.base_url}{endpoint}{uipath_svc}"
+        return self._post(url, body=transaction_body)
 
     def events(self):
         """

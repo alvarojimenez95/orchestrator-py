@@ -1,6 +1,7 @@
 from orchestrator.orchestrator_http import OrchestratorHTTP
 from orchestrator.orchestrator_asset import Asset
 from orchestrator.orchestrator_queue import Queue
+from orchestrator.orchestrator_job import Job
 from orchestrator.orchestrator_process_schedule import ProcessSchedule
 from orchestrator.exceptions import OrchestratorMissingParam
 from urllib.parse import urlencode
@@ -167,3 +168,16 @@ class Folder(OrchestratorHTTP):
         uipath_svc = "UiPath.Server.Configuration.OData.GetMachineSessionRuntimesByFolderId(folderId={self.id})"
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         return self._get(url)
+
+    def get_jobs(self, options=None):
+        """
+        Returns the jobs of a given folder
+        """
+        endpoint = "/Jobs"
+        if options:
+            query_params = urlencode(options)
+            url = f"{self.base_url}{endpoint}?{query_params}"
+        else:
+            url = f"{self.base_url}{endpoint}"
+        data = self._get(url)["value"]
+        return [Job(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, job["Id"], job["Key"], job["ReleaseName"]) for job in data]

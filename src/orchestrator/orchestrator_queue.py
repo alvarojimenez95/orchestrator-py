@@ -34,12 +34,27 @@ class Queue(OrchestratorHTTP):
 
     def info(self):
         """
-            Gets a single queue by queue id
+            Returns information about the queue 
         """
         endpoint = f"/QueueDefinitions({self.id})"
         url = f"{self.base_url}{endpoint}"
         data = self._get(url)
         return data
+
+    def start(self, machine_identifier, specific_content):
+        """
+            Starts a given transaction
+        """
+        endpoint = "/Queues/UiPathODataSvc.StartTransaction"
+        format_body_start = {
+            "transactionData": {
+                "Name": self.name,
+                "RobotIdentifier": machine_identifier,
+                "SpecificContent": specific_content
+            }
+        }
+        url = f"{self.base_url}{endpoint}"
+        return self._post(url, body=format_body_start)
 
     def get_processing_records(self, num_days=1, options=None):
         """
@@ -89,7 +104,6 @@ class Queue(OrchestratorHTTP):
         url = f"{self.base_url}{endpoint}?{query_params}"
         data = self._get(url)
         filt_data = data['value']
-        # pprint(filt_data)[0]
         return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"]) for item in filt_data]
 
     def get_queue_items_ids(self, options=None):
@@ -103,7 +117,7 @@ class Queue(OrchestratorHTTP):
             ids.update({item.id: item.queue_name})
         return ids
 
-    def create_queue_item(self, queue_id, specific_content=None, priority="Low"):
+    def add_queue_item(self, specific_content=None, priority="Low"):
         """
             Creates a new Item
 
@@ -127,7 +141,7 @@ class Queue(OrchestratorHTTP):
                 "Name": self.name,
                 "SpecificContent": specific_content,
                 "Reference": self.generate_reference(),
-                "Progress": "New"
+                # "Progress": "In Progres"
             }
         }
         # pprint(format_body_queue)
@@ -139,11 +153,11 @@ class Queue(OrchestratorHTTP):
             "Priority": priority,
             "SpecificContent": sp_content,
             "Reference": self.generate_reference(),
-            "Progress": "New"
+            "Progress": "In Progress"
         }
         return formatted_sp_content
 
-    def bulk_create_items(self, queue_id, specific_contents=None, priority="Low"):
+    def bulk_create_items(self, specific_contents=None, priority="Low"):
         """
             Creates a list of items for a given queue
 
@@ -164,7 +178,7 @@ class Queue(OrchestratorHTTP):
         format_body_queue = {
             "commitType": "StopOnFirstFailure",
             "queueName": self.name,
-            "queueItems": [self._format_specific_content(queue_name=self.name, sp_content=sp_content) for sp_content in specific_contents]
+            "queueItems": [self._format_specific_content(queue_name=self.name, sp_content=sp_content, priority=priority) for sp_content in specific_contents]
         }
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
