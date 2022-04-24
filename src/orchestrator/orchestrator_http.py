@@ -105,15 +105,19 @@ class OrchestratorHTTP(object):
             if kwargs:
                 # pprint(kwargs)
                 item_data = kwargs['body']['body']
-                # print(json.dumps(item_data))
+                # pprint(item_data)
                 r = self.session.request(method, endpoint, json=item_data, headers=headers)
             else:
                 r = self.session.request(method, endpoint, headers=headers)
             # print(endpoint)
-            # pprint(r)
-            return r.json()
+            pprint(f"{r.status_code} ---- {r.url}")
+            try:
+                return r.json()
+            except requests.exceptions.JSONDecodeError:
+                return
         except Exception as err:
             print(err)
+            raise
 
     def _get(self, url, *args, **kwargs):
 
@@ -128,5 +132,3 @@ class OrchestratorHTTP(object):
 
     def _delete(self, url, *args, **kwargs):
         return self._internal_call("DELETE", url, args, kwargs)
-
-    # falta uno de get_queue_item_comments
