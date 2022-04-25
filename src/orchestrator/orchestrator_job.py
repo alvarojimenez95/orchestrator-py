@@ -77,13 +77,3 @@ class Job(OrchestratorHTTP):
             "jobKey": self.key
         }
         return self._post(url, body=resume_body)
-
-    def edit(self, body=None):
-        endpoint = f"/Assets({self.id})"
-        url = f"{self.base_url}{endpoint}"
-        return self._put(url, body=body)
-
-    def delete(self, body=None):
-        endpoint = f"/Assets({self.id})"
-        url = f"{self.base_url}{endpoint}"
-        return self._delete(url, body=body)

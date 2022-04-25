@@ -181,3 +181,12 @@ class Folder(OrchestratorHTTP):
             url = f"{self.base_url}{endpoint}"
         data = self._get(url)["value"]
         return [Job(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, job["Id"], job["Key"], job["ReleaseName"]) for job in data]
+
+    def job_triggers(self, options=None):
+        endpoint = "/JobTriggers"
+        if options:
+            query_params = urlencode(options)
+            url = f"{self.base_url}{endpoint}?{query_params}"
+        else:
+            url = f"{self.base_url}{endpoint}"
+        return self._get(url)["value"]

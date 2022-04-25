@@ -4,6 +4,7 @@ import requests
 import json
 from urllib.parse import urlencode
 from orchestrator.orchestrator_folder import Folder
+from orchestrator.orchestrator_library import Library
 from orchestrator.orchestrator_process import Process
 
 
@@ -134,3 +135,13 @@ class Orchestrator(OrchestratorHTTP):
         process = self._get(url)["value"][0]
         return Process(self.client_id, self.refresh_token, self.tenant_name, self.folder_id,
                        self.session, process["Id"], process["Title"], process["Version"], process["Key"])
+
+    def get_libraries(self, options=None):
+        endpoint = "/Libraries"
+        if options:
+            query_params = urlencode(options)
+            url = f"{self.base_url}{endpoint}?{query_params}"
+        else:
+            url = f"{self.base_url}{endpoint}"
+        libraries = self._get(url)["value"]
+        return [Library(self.client_id, self.refresh_token, self.tenant_name, self.session,  lib["Key"], lib["Id"], lib["Title"], self.folder_id) for lib in libraries]
