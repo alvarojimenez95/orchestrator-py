@@ -23,9 +23,10 @@ client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_n
 # print(client)
 # pprint(client.get_folder_ids())
 folder = client.get_folder_by_id(int(PRE_FOLDER_ID))
-jobs = folder.get_jobs()
-job = jobs[20]
-pprint(job.info())
+jobs = folder.job_triggers()
+libraries = client.get_libraries()
+library = libraries[0]
+print(library)
 # print(client)
 # production = client.get_folder_by_id(int(PROD_FOLDER_ID))
 # print(client)
