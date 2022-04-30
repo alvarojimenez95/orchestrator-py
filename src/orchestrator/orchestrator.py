@@ -1,4 +1,5 @@
 
+from typing import List
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
 import json
@@ -10,8 +11,23 @@ from orchestrator.orchestrator_process import Process
 
 __all__ = ["Orchestrator"]
 
+"""
+Parent class for initializing a client for UiPath's Orchestrator's API
+"""
+
 
 class Orchestrator(OrchestratorHTTP):
+    """
+    Constructor. 
+
+    @client_id: the client id 
+    @refresh_token: a refresh token  
+    @tenant_name: account's logical name
+    @folder_id: a folder id (optional)
+    @session: a session object (options)
+    @file: a credentials file containing client_id, refresh_token and tenant_name (optional) 
+    """
+
     def __init__(
         self,
         client_id=None,
@@ -55,11 +71,17 @@ class Orchestrator(OrchestratorHTTP):
             self.session = requests.Session()
 
     def __str__(self):
-        return f"Folder Id: {self.folder_id} \nTenant: {self.tenant_name}"
+        if self.folder_id:
+            return f"Folder Id: {self.folder_id} \nTenant: {self.tenant_name}"
+        return {f"Tenant: {self.tenant_name}"}
 
     def get_folders(self, options=None):
         """
-            Gets all the folders from a given Organization Unit
+        Gets all the folders from a given organization
+
+        @options: dictionary of odata filtering options
+        ========
+        @returns: a list of Folders of the given organization
         """
         endpoint = "/Folders"
         if options:
@@ -73,9 +95,13 @@ class Orchestrator(OrchestratorHTTP):
 
     def get_folder_ids(self, options=None):
         """
-            Returns a python list of dictionaries
-            with all the folder names as keys
-            and the folder ids as values
+            Returns a dictionary with the folder ids 
+
+            @options: dictionary of odata filtering options
+            =======
+            @returns: a dictionary where the keys are the ids 
+            and the values the names of the folders in the given
+            organization 
         """
         folders = self.get_folders(options)
         ids = {}
@@ -84,12 +110,26 @@ class Orchestrator(OrchestratorHTTP):
         return ids
 
     def get_folder_by_id(self, folder_id):
+        """
+        Returns a single folder by its id 
+
+        @folder_id: the id of the folder
+        ==========
+        @returns: a Folder object with the specified folder id
+        """
         ids = self.get_folder_ids()
         self.folder_id = folder_id
         folder_name = ids[folder_id]
         return Folder(client_id=self.client_id, refresh_token=self.refresh_token, tenant_name=self.tenant_name,  session=self.session, folder_name=folder_name, folder_id=folder_id)
 
     def get_folder_by_name(self, folder_name):
+        """
+            Returns a single folder by its name
+
+            @folder_name: the name of the folder
+            ============
+            @returns: a Folder object with the specified folder_name
+        """
         pass
 
     def usernames(self, options=None):
@@ -106,6 +146,13 @@ class Orchestrator(OrchestratorHTTP):
         return self._get(url)
 
     def get_processes(self, options=None):
+        """
+        Gets all the processes of a given organization
+
+        @options: a dictionary of odata filtering options
+        ========
+        @returns: a list of Processes of the given organization
+        """
         endpoint = "/Processes"
         if options:
             query_params = urlencode(options)
@@ -117,8 +164,13 @@ class Orchestrator(OrchestratorHTTP):
 
     def get_processes_keys(self, options=None):
         """
-            Returns a dictionary
-                process title -- process key
+            Returns a dictionary with the processes keys
+
+            @options: dictionary of odata filtering options
+            ========
+            @returns: a dictionary where the keys are the process'
+            key and the values the process' title of the processes 
+            in the given organization
         """
         processes = self.get_processes(options=options)
         ids = {}
@@ -127,6 +179,13 @@ class Orchestrator(OrchestratorHTTP):
         return ids
 
     def get_process_by_key(self, process_key):
+        """
+        Returns a single process by is key
+
+        @process_key: the key of the process 
+        ============
+        @returns: a Process object with the specified process key 
+        """
         query_param = urlencode({
             "$filter": f"Key eq '{process_key}"
         })
@@ -137,6 +196,13 @@ class Orchestrator(OrchestratorHTTP):
                        self.session, process["Id"], process["Title"], process["Version"], process["Key"])
 
     def get_libraries(self, options=None):
+        """
+        Gets all the libraries of a given organization
+
+        @options: a dictionary of odata filtering options
+        ========
+        @returns: a list of Libraries of the given organization
+        """
         endpoint = "/Libraries"
         if options:
             query_params = urlencode(options)

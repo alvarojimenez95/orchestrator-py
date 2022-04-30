@@ -8,7 +8,34 @@ from urllib.parse import urlencode
 import requests
 
 
+"""
+Class to deal with calls and requests from a given Folder of an Orchestrator Cloud instance
+
+"""
+
+
 class Folder(OrchestratorHTTP):
+    """Constructor 
+
+    :param client_id - the client id of your organization 
+    :type client_id - str 
+
+    :param refresh_token - a refresh token. 
+    :type refresh_token - str 
+
+    :param tenant_name - your account's logical name
+    :type tenant_name - str 
+
+    :param session - an optional session object 
+    :type session - Session
+
+    :param folder_id - the id of the folder (UiPath's organizations unit)
+    :type folder_id - str 
+
+    :param folder_name - the name of the folder 
+    :type folder_name : str
+    """
+
     def __init__(self, client_id, refresh_token, tenant_name, session=None, folder_name=None,  folder_id=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
         if not tenant_name or not folder_id:
@@ -36,10 +63,9 @@ class Folder(OrchestratorHTTP):
         return data
 
     def get_queues(self, options=None):
-        """
-            Parameters:
-            :param options (dict(str, any)) dictionary of
-            filtering odata options
+        """Parameters:
+            :param options - dictionary of filtering odata options
+            :type options - dict
         """
         endpoint = "/QueueDefinitions"
         if options:
@@ -66,10 +92,11 @@ class Folder(OrchestratorHTTP):
         return ids
 
     def get_processing_records(self, options=None):
-        """
-            Returns a list of queue processing records for all the queues
+        """Returns a list of queue processing records for all the queues
 
-            :options dictionary for odata options
+            :param options - dictionary for odata options
+            :type options - dict
+
 
         """
         endpoint = "/QueueProcessingRecords"
@@ -106,10 +133,11 @@ class Folder(OrchestratorHTTP):
     def get_asset_ids(self, options=None):
         """
             Returns a dictionary of ky value pairs
-                key: asset name
-                value: asset id
-            Parameters:
-                :options dict of odata filter options
+            where keys are the assets names and the values
+            are the ids
+
+
+            :param options - dictionary of odata filter options
         """
 
         assets = self.get_assets(options)
@@ -121,7 +149,6 @@ class Folder(OrchestratorHTTP):
     def get_asset_by_id(self, asset_id):
         assets = self.get_asset_ids()
         return Asset(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, asset_id, assets[asset_id])
-        pass
 
     def create_asset(self, body=None):
         pass

@@ -9,8 +9,16 @@ __all__ = ["Queue"]
 
 class Queue(OrchestratorHTTP):
     """
-        To initialize a class you need the folder id because queues are
-        dependant on the folder id
+    Constructor. 
+
+    @client_id: the client id 
+    @refresh_token: a refresh token  
+    @tenant_name: account's logical name
+    @folder_id: the folder id 
+    @folder_name: the folder name
+    @session: a session object (options)
+    @queue_name: the queue name
+    @queue_id: the queue id
     """
 
     def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, session=None, queue_name=None, queue_id=None):
@@ -34,7 +42,10 @@ class Queue(OrchestratorHTTP):
 
     def info(self):
         """
-            Returns information about the queue 
+            Returns information about the queue
+
+            @returns: dictionary with more in depth information
+            about the queue 
         """
         endpoint = f"/QueueDefinitions({self.id})"
         url = f"{self.base_url}{endpoint}"
@@ -44,6 +55,9 @@ class Queue(OrchestratorHTTP):
     def start(self, machine_identifier, specific_content):
         """
             Starts a given transaction
+
+            @machine_identifier: the machine's unique identifier
+            @specific_content: the specific content of the transaction
         """
         endpoint = "/Queues/UiPathODataSvc.StartTransaction"
         format_body_start = {
@@ -62,7 +76,9 @@ class Queue(OrchestratorHTTP):
             queue and a certain number of days (by default, hourly reports
             from the last day)
 
-            :options dictionary for odata options
+            @num_days: the number of days before today from which to get
+            the processing records (default: 1)
+            @options: dictionary of odata filtering options
         """
         endpoint = "/QueueProcessingRecords"
         query = f"daysNo={num_days},queueDefinitionId={self.id}"
@@ -77,24 +93,21 @@ class Queue(OrchestratorHTTP):
 
     def get_item_by_id(self, item_id):
         """
-            Gets a single item by item id
+            Gets a single Item by item id
 
-            Parameters:
-
-            :param item_id : item id
-
-
-            Necesito una clase Item
+            @item_id: the id of the item
+            ========
+            @returns: an Item object with the specified item id
         """
         return QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, self.session, item_id)
 
     def get_queue_items(self, options=None):
         """
-            Returns a list of queue items belonging to a given queue
-            Parameters:
-                :param queue_id : the queue id
-                :param options dict: odata options, $filter tag will be overwritten
-            Maximum number of results: 1000
+            Returns a list of queue items of the given queue
+
+            @options: dictionary of odata filtering options ($filter tag will be overwritten)
+            =========
+            @returns: a list of QueueItem objects of the given queue (Maximum number of results: 1000)
         """
         endpoint = "/QueueItems"
         odata_filter = {"$Filter": f"QueueDefinitionId eq {self.id}"}
@@ -108,8 +121,13 @@ class Queue(OrchestratorHTTP):
 
     def get_queue_items_ids(self, options=None):
         """
-            Returns a list of dictionaries where the key value
-            pairse ar <queue_id : item_id>
+            Returns a list of dictionaries with the queue 
+            item ids 
+
+            @options: dictionary of odata filtering options 
+            ========
+            @returns: a dictionary where the keys are the queue item
+            ids of the given queue and the values the queue name
         """
         items = self.get_queue_items(options)
         ids = {}
@@ -118,17 +136,12 @@ class Queue(OrchestratorHTTP):
         return ids
 
     def add_queue_item(self, specific_content=None, priority="Low"):
-        """
-            Creates a new Item
+        """Creates a new Item
 
-            Parameters:
-                :param queue_id - the queue id
-                :specific_content - python dictionary of key value pairs. It does not
-                                    admit nested dictionaries. If you want to be able to
-                                    pass a dictionary as a key value pair inside the specific
-                                    content attribute, you need to json.dumps(dict) first for it
-                                    to work.
-                :param priority - sets up the priority (Low by default)
+            @specific_content: dictionary of key value pairs (it does not
+            admit nested dictionaries; for it to work json.dumps first)
+
+            @priority - sets up the priority (Low by default)
         """
         endpoint = "/Queues"
         uipath_svc = "/UiPathODataSvc.AddQueueItem"
@@ -147,28 +160,25 @@ class Queue(OrchestratorHTTP):
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
 
-    def _format_specific_content(self, queue_name, sp_content, priority="Low"):
+    def _format_specific_content(self, queue_name, sp_content, priority="Low", progress="New"):
         formatted_sp_content = {
             "Name": queue_name,
             "Priority": priority,
             "SpecificContent": sp_content,
             "Reference": self.generate_reference(),
-            "Progress": "In Progress"
+            "Progress": progress
         }
         return formatted_sp_content
 
-    def bulk_create_items(self, specific_contents=None, priority="Low"):
-        """
-            Creates a list of items for a given queue
-
-            Parameters:
-                :param queue_id - the queue id
-                :specific_content - python dictionary of key value pairs. It does not
-                                    admit nested dictionaries. If you want to be able to
-                                    pass a dictionary as a key value pair inside the specific
-                                    content attribute, you need to json.dumps(dict) first for it
-                                    to work.
-                :param priority - sets up the priority (Low by default)
+    def bulk_create_items(self, specific_contents=None, priority="Low", progress="New"):
+        """Adds a list of items for a given queue
+            @param specific_content: dictionary of key value pairs. It does not
+            admit nested dictionaries. If you want to be able to pass a dictionary 
+            as a key value pair inside the specific content attribute, you need to 
+                                json.dumps(dict) 
+            first for it to work.
+            @priority: sets up the priority (default: Low)
+            @progress: sets up the progress bar (default: New)
         """
         endpoint = "/Queues"
         uipath_svc = "/UiPathODataSvc.BulkAddQueueItems"
@@ -178,14 +188,21 @@ class Queue(OrchestratorHTTP):
         format_body_queue = {
             "commitType": "StopOnFirstFailure",
             "queueName": self.name,
-            "queueItems": [self._format_specific_content(queue_name=self.name, sp_content=sp_content, priority=priority) for sp_content in specific_contents]
+            "queueItems": [self._format_specific_content(queue_name=self.name, sp_content=sp_content, priority=priority, progress=progress) for sp_content in specific_contents]
         }
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
 
     def edit_queue(self, name=None, description=None):
-        if not name:
-            raise OrchestratorMissingParam(value="name", message="name cannot be null")
+        """Edits the queue with a new name and a new 
+        descriptions
+
+        @name: the new name of the queue
+        @description: the new description of the queue
+
+        """
+        if not name or not description:
+            raise OrchestratorMissingParam(value="name/description", message="name and/or description cannot be null")
         endpoint = f"/QueueDefinitions({self.id})"
         url = f"{self.base_url}{endpoint}"
         format_body_queue = {
@@ -195,6 +212,7 @@ class Queue(OrchestratorHTTP):
         return self._put(url, body=format_body_queue)
 
     def delete_queue(self):
+        """Deletes the queue"""
         endpoint = f"/QueueDefinitions({self.id})"
         url = f"{self.base_url}{endpoint}"
         return self._delete(url)
