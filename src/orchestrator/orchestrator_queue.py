@@ -161,20 +161,24 @@ class Queue(OrchestratorHTTP):
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
 
-    def _format_specific_content(self, queue_name, sp_content, priority="Low", progress="New", reference=None):
-        formatted_sp_content = {
-            "Name": queue_name,
-            "Priority": priority,
-            "SpecificContent": sp_content,
-            "Progress": progress
-        }
-        if reference:
-            ran_uuid = str(uuid4())
-            ref_uuid = {"Reference": f"{sp_content[reference]}#{ran_uuid}"}
+    def _format_specific_content(self, queue_name, sp_content, reference, priority="Low", progress="New", batch_id=None):
+        ran_uuid = str(uuid4())
+        try:
+            ref_uuid = {"Reference": f"{sp_content[reference]}#{batch_id}"}
+            sp_content.update({"ReferenceID": ran_uuid})
+            sp_content.update({"BatchID": batch_id})
+            sp_content.update({"ItemID": sp_content[reference]})
+            formatted_sp_content = {
+                "Name": queue_name,
+                "Priority": priority,
+                "SpecificContent": sp_content,
+                "Progress": progress,
+            }
             formatted_sp_content.update(ref_uuid)
-        else:
-            formatted_sp_content.update(ran_uuid)
 
+        except KeyError:
+            raise
+        print(formatted_sp_content)
         return formatted_sp_content
 
     def bulk_create_items(self, specific_contents=None, priority="Low", progress="New", reference=None):
@@ -194,10 +198,12 @@ class Queue(OrchestratorHTTP):
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         if not specific_contents:
             raise OrchestratorMissingParam(value="specific_contents", message="specific contents cannot be null")
+
+        batch_id = str(uuid4())
         format_body_queue = {
             "commitType": "StopOnFirstFailure",
             "queueName": self.name,
-            "queueItems": [self._format_specific_content(queue_name=self.name, sp_content=sp_content, priority=priority, progress=progress) for sp_content in specific_contents]
+            "queueItems": [self._format_specific_content(queue_name=self.name, sp_content=sp_content, reference=reference, priority=priority, progress=progress, batch_id=batch_id) for sp_content in specific_contents]
         }
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
