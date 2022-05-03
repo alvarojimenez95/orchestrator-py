@@ -1,3 +1,4 @@
+from uuid import uuid4
 from orchestrator.exceptions import OrchestratorMissingParam
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
@@ -160,17 +161,23 @@ class Queue(OrchestratorHTTP):
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
 
-    def _format_specific_content(self, queue_name, sp_content, priority="Low", progress="New"):
+    def _format_specific_content(self, queue_name, sp_content, priority="Low", progress="New", reference=None):
         formatted_sp_content = {
             "Name": queue_name,
             "Priority": priority,
             "SpecificContent": sp_content,
-            "Reference": self.generate_reference(),
             "Progress": progress
         }
+        if reference:
+            ran_uuid = str(uuid4())
+            ref_uuid = {"Reference": f"{sp_content[reference]}#{ran_uuid}"}
+            formatted_sp_content.update(ref_uuid)
+        else:
+            formatted_sp_content.update(ran_uuid)
+
         return formatted_sp_content
 
-    def bulk_create_items(self, specific_contents=None, priority="Low", progress="New"):
+    def bulk_create_items(self, specific_contents=None, priority="Low", progress="New", reference=None):
         """Adds a list of items for a given queue
             @param specific_content: dictionary of key value pairs. It does not
             admit nested dictionaries. If you want to be able to pass a dictionary 
@@ -179,6 +186,8 @@ class Queue(OrchestratorHTTP):
             first for it to work.
             @priority: sets up the priority (default: Low)
             @progress: sets up the progress bar (default: New)
+            @reference: indicates a specific field of the specific content to
+            be used as a queue reference.
         """
         endpoint = "/Queues"
         uipath_svc = "/UiPathODataSvc.BulkAddQueueItems"
