@@ -22,7 +22,7 @@ client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_n
 
 folder = client.get_folder_by_id(int(PRE_FOLDER_ID))
 
-queue = folder.get_queue_by_id(110927)
+queue = folder.get_queue_by_id(113663)
 
 item_content = {
     "Name": "Yo",
@@ -30,18 +30,17 @@ item_content = {
 }
 
 
-for i in range(0, 30):
-    print("Empezando la transaccion")
-    res = queue.start(machine_identifier=MACHINE_IDENTIFIER, specific_content=item_content)
-    # pprint(res)
-    # time.sleep(2)
-    item_id = res["Id"]
-    print("Obteniendo el item")
-    item = queue.get_item_by_id(item_id)
-    # time.sleep(2)
-    print("Actualizando el status")
-    item.set_transaction_status(success=True)
-    # pprint(res2)
+print("Empezando la transaccion")
+res = queue.start(machine_identifier=MACHINE_IDENTIFIER, specific_content=None)
+pprint(res)
+# time.sleep(2)
+item_id = res["Id"]
+print("Obteniendo el item")
+item = queue.get_item_by_id(item_id)
+# time.sleep(2)
+print("Actualizando el status")
+item.set_transaction_status(success="True")
+# pprint(res2)
 
 
 end = time.time()

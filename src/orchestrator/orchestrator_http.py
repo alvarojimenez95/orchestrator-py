@@ -106,16 +106,16 @@ class OrchestratorHTTP(object):
             if kwargs:
                 # pprint(kwargs)
                 item_data = kwargs['body']['body']
-                # pprint(item_data)
+                # pprint(json.dumps(item_data))
                 r = self.session.request(method, endpoint, json=item_data, headers=headers)
             else:
                 r = self.session.request(method, endpoint, headers=headers)
             # print(endpoint)
-            pprint(f"{r.status_code} ---- {r.url}")
+            # pprint(f"{r.status_code} ---- {r.url}")
             try:
                 return r.json()
             except requests.exceptions.JSONDecodeError:
-                return
+                return r.text
         except Exception as err:
             print(err)
             raise

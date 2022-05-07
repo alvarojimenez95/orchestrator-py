@@ -120,7 +120,7 @@ class Orchestrator(OrchestratorHTTP):
         ids = self.get_folder_ids()
         self.folder_id = folder_id
         folder_name = ids[folder_id]
-        return Folder(client_id=self.client_id, refresh_token=self.refresh_token, tenant_name=self.tenant_name,  session=self.session, folder_name=folder_name, folder_id=folder_id)
+        return Folder(client_id=self.client_id, refresh_token=self.refresh_token, tenant_name=self.tenant_name,  session=self.session, folder_name=folder_name, folder_id=int(folder_id))
 
     def get_folder_by_name(self, folder_name):
         """

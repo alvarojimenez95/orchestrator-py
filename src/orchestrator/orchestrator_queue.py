@@ -53,7 +53,7 @@ class Queue(OrchestratorHTTP):
         data = self._get(url)
         return data
 
-    def start(self, machine_identifier, specific_content):
+    def start(self, machine_identifier, specific_content=None):
         """
             Starts a given transaction
 
@@ -68,6 +68,9 @@ class Queue(OrchestratorHTTP):
                 "SpecificContent": specific_content
             }
         }
+        if not specific_content:
+            format_body_start["transactionData"]["SpecificContent"] = None
+        print(format_body_start)
         url = f"{self.base_url}{endpoint}"
         return self._post(url, body=format_body_start)
 
@@ -178,7 +181,7 @@ class Queue(OrchestratorHTTP):
 
         except KeyError:
             raise
-        print(formatted_sp_content)
+        # print(formatted_sp_content)
         return formatted_sp_content
 
     def bulk_create_items(self, specific_contents=None, priority="Low", progress="New", reference=None):

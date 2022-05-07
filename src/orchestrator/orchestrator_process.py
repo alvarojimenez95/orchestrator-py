@@ -47,15 +47,6 @@ class Process(OrchestratorHTTP):
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         return self._get(url)
 
-    # def download_process_package(self):
-    #     """
-    #         Doesnt work
-    #     """
-    #     endpoint = "/Processes"
-    #     uipath_svc = f"UiPath.Server.Configuration.OData.DownloadPackage(key='{self.key}')"
-    #     url = f"{self.base_url}{endpoint}{uipath_svc}"
-    #     return self._get(url)
-
     def get_available_versions(self):
         """
         Gets all the available versions for a given process

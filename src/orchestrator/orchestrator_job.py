@@ -1,6 +1,9 @@
+from pprint import pprint
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
 from orchestrator.exceptions import OrchestratorMissingParam
+from urllib.parse import urlencode
+from orchestrator.orchestrator_logs import Log
 
 
 class Job(OrchestratorHTTP):
@@ -22,8 +25,7 @@ class Job(OrchestratorHTTP):
             self.session = requests.Session()
 
     def __str__(self):
-        print(f"Key: {self.id}")
-        print(f"Name: {self.name}")
+        return f"Key: {self.key}\nName: {self.name}"
 
     def info(self):
         endpoint = f"/Jobs({self.id})"
@@ -77,3 +79,15 @@ class Job(OrchestratorHTTP):
             "jobKey": self.key
         }
         return self._post(url, body=resume_body)
+
+    def get_logs(self, trace="Info"):
+        # need a Log Message class
+        endpoint = "/RobotLogs"
+        query_param = urlencode({
+            "$filter": f"ProcessName eq '{self.name}' and Level eq '{trace}' and JobKey eq {self.key}",
+            "$orderby": "TimeStamp desc"
+        })
+        url = f"{self.base_url}{endpoint}?{query_param}"
+        logs = self._get(url)["value"]
+        # pprint(data[0])
+        return [Log(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.session, log["Message"], log["Level"], self.key, log["TimeStamp"]) for log in logs]

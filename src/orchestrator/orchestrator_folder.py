@@ -111,7 +111,7 @@ class Folder(OrchestratorHTTP):
 
     def get_queue_by_id(self, queue_id):
         queues = self.get_queue_ids()
-        return Queue(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, queues[queue_id], queue_id=queue_id)
+        return Queue(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, queues[queue_id], queue_id=int(queue_id))
 
     def get_assets(self, options=None):
         """
@@ -196,18 +196,42 @@ class Folder(OrchestratorHTTP):
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         return self._get(url)
 
-    def get_jobs(self, options=None):
+    def get_jobs(self, top="100", options=None):
         """
         Returns the jobs of a given folder
+
+        @top : maximum number of results (100 default)
+        @options: dictionary of odata filtering options
         """
         endpoint = "/Jobs"
+        default = {"$orderby": "StartTime desc", "$top": f"{top}"}
+        enc_default = urlencode(default)
         if options:
-            query_params = urlencode(options)
+            default.update(options)
+            query_params = urlencode(default)
             url = f"{self.base_url}{endpoint}?{query_params}"
         else:
-            url = f"{self.base_url}{endpoint}"
+            url = f"{self.base_url}{endpoint}?{enc_default}"
         data = self._get(url)["value"]
+        print(len(data))
         return [Job(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, job["Id"], job["Key"], job["ReleaseName"]) for job in data]
+
+    def get_job_keys(self, top="100", options=None):
+        """
+
+        """
+        jobs = self.get_jobs(top, options)
+        ids = {}
+        for job in jobs:
+            ids.update({job.key: job.name})
+        return ids
+
+    def get_job_by_key(self, key):
+        endpoint = "/Jobs"
+        query_param = urlencode({"$filter": f"Key eq {key}"})
+        url = f"{self.base_url}{endpoint}?{query_param}"
+        data = self._get(url)["value"][0]
+        return Job(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, data["Id"], data["Key"], data["ReleaseName"])
 
     def job_triggers(self, options=None):
         endpoint = "/JobTriggers"
