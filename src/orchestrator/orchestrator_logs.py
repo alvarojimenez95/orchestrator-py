@@ -1,3 +1,4 @@
+from datetime import datetime
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
 from orchestrator.exceptions import OrchestratorMissingParam
@@ -24,3 +25,14 @@ class Log(OrchestratorHTTP):
 
     def __str__(self):
         return f"Job Key: {self.key}\nMessage: {self.message}\nTimeStamp: {self.timestamp}\nTrace: {self.trace}"
+
+    def create(self, level="Info", message=None):
+        endpoint = "/api/Logs/SubmitLogs"
+        body = {
+            "message": message,
+            "level": level,
+            "timeStamp": datetime.now,
+            "jobId": self.id
+        }
+        url = f"{self.base_url}{endpoint}"
+        return self._post(url, body=body)

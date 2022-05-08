@@ -111,7 +111,7 @@ class OrchestratorHTTP(object):
             else:
                 r = self.session.request(method, endpoint, headers=headers)
             # print(endpoint)
-            # pprint(f"{r.status_code} ---- {r.url}")
+            pprint(f"{r.status_code} ---- {r.url}")
             try:
                 return r.json()
             except requests.exceptions.JSONDecodeError:

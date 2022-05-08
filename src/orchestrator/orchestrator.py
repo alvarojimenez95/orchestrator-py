@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 from orchestrator.orchestrator_folder import Folder
 from orchestrator.orchestrator_library import Library
 from orchestrator.orchestrator_process import Process
+from orchestrator.orchestrator_machine import Machine
 
 
 __all__ = ["Orchestrator"]
@@ -64,10 +65,10 @@ class Orchestrator(OrchestratorHTTP):
             self.folder_id = folder_id
             self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
         if session:
-            print("session set")
+            # print("session set")
             self.session = session
         else:
-            print("session not set")
+            # print("session not set")
             self.session = requests.Session()
 
     def __str__(self):
@@ -145,6 +146,15 @@ class Orchestrator(OrchestratorHTTP):
             url = f"{self.base_url}{endpoint}{uipath_svc}"
         return self._get(url)
 
+    def permissions(self, options=None):
+        endpoint = "/Permissions"
+        if options:
+            query_params = urlencode(options)
+            url = f"{self.base_url}{endpoint}?{query_params}"
+        else:
+            url = f"{self.base_url}{endpoint}"
+        return self._get(url)
+
     def get_processes(self, options=None):
         """
         Gets all the processes of a given organization
@@ -211,3 +221,41 @@ class Orchestrator(OrchestratorHTTP):
             url = f"{self.base_url}{endpoint}"
         libraries = self._get(url)["value"]
         return [Library(self.client_id, self.refresh_token, self.tenant_name, self.session,  lib["Key"], lib["Id"], lib["Title"], self.folder_id) for lib in libraries]
+
+    def get_machines(self, options=None):
+        """
+        Gets all the machines of a given organization 
+        """
+        endpoint = "/Machines"
+        if options:
+            query_params = urlencode(options)
+            url = f"{self.base_url}{endpoint}?{query_params}"
+        else:
+            url = f"{self.base_url}{endpoint}"
+        data = self._get(url)["value"]
+        return [Machine(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, machine["Id"], machine["Key"], machine["Name"]) for machine in data]
+
+    def get_machine_ids(self, options=None):
+        """
+        Returns a dictionary of the machine keys and their
+        names 
+
+        @options: dictionary of odata filtering options 
+        """
+        machines = self.get_machines(options)
+        ids = {}
+        for machine in machines:
+            ids.update({machine.id: machine.name})
+        return ids
+
+    def get_machine_by_id(self, machine_id):
+        """
+        Returns a single machine by its id 
+
+        @machine_id: the id of the machine 
+        """
+
+        endpoint = f"/Machines({machine_id})"
+        url = f"{self.base_url}{endpoint}"
+        machine = self._get(url)
+        return Machine(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, machine_id, machine["Key"], machine["Name"])

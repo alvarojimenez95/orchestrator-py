@@ -23,8 +23,14 @@ client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_n
 # print(client)
 # pprint(client.get_folder_ids())
 folder = client.get_folder_by_id(int(PRE_FOLDER_ID))
-job = folder.get_job_by_key(key="d006616e-244d-423d-bb87-8da16edc0720")
+
 # pprint(job.info())
 
-logs = job.get_logs()
-print(logs[0])
+# logs = job.get_logs()
+
+machines = client.get_machines()
+machine_ids = client.get_machine_ids()
+# pprint(machine_ids)
+
+prod = client.get_machine_by_id(117495)
+pprint(prod.info())
