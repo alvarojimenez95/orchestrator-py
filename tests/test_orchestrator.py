@@ -24,13 +24,26 @@ client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_n
 # pprint(client.get_folder_ids())
 folder = client.get_folder_by_id(int(PRE_FOLDER_ID))
 
-# pprint(job.info())
+# queue = folder.get_queue_by_id(113663)
 
-# logs = job.get_logs()
+sp_content1 = {
+    "nombre": "Alvaro",
+    "edad": "26"
+}
 
-machines = client.get_machines()
-machine_ids = client.get_machine_ids()
-# pprint(machine_ids)
+hola = "test"
 
-prod = client.get_machine_by_id(117495)
-pprint(prod.info())
+# sp_content2 = {
+#     "nombre": "Pedro",
+#     "edad": "24"
+# }
+
+# sp_contents = [sp_content1, sp_content2]
+# queue.bulk_create_items(specific_contents=sp_contents, progress="High")
+
+# alvaro = client.get_machine_by_id(123680)
+# pprint(alvaro.info())
+
+
+queue = folder.get_queue_by_id(113663)
+queue.start(machine_identifier="635a3c6d-ff3d-4b58-9a50-a2796257f4c5", specific_content=sp_content1)

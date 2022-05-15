@@ -164,13 +164,29 @@ class Queue(OrchestratorHTTP):
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
 
-    def _format_specific_content(self, queue_name, sp_content, reference, priority="Low", progress="New", batch_id=None):
+    def _format_specific_content(self, queue_name, sp_content, reference=None, priority="Low", progress="New", batch_id=None):
         ran_uuid = str(uuid4())
-        try:
-            ref_uuid = {"Reference": f"{sp_content[reference]}#{batch_id}"}
+        if reference:
+            try:
+                ref_uuid = {"Reference": f"{sp_content[reference]}#{batch_id}"}
+                sp_content.update({"ReferenceID": ran_uuid})
+                sp_content.update({"BatchID": batch_id})
+                sp_content.update({"ItemID": sp_content[reference]})
+                formatted_sp_content = {
+                    "Name": queue_name,
+                    "Priority": priority,
+                    "SpecificContent": sp_content,
+                    "Progress": progress,
+                }
+                formatted_sp_content.update(ref_uuid)
+                return formatted_sp_content
+            except KeyError as err:
+                if reference in err.args:
+                    raise Exception(f"Invalid reference: {reference} not found in sp_content")
+        else:
+            ref_uuid = {"Reference": f"{ran_uuid}"}
             sp_content.update({"ReferenceID": ran_uuid})
             sp_content.update({"BatchID": batch_id})
-            sp_content.update({"ItemID": sp_content[reference]})
             formatted_sp_content = {
                 "Name": queue_name,
                 "Priority": priority,
@@ -178,11 +194,7 @@ class Queue(OrchestratorHTTP):
                 "Progress": progress,
             }
             formatted_sp_content.update(ref_uuid)
-
-        except KeyError:
-            raise
-        # print(formatted_sp_content)
-        return formatted_sp_content
+            return formatted_sp_content
 
     def bulk_create_items(self, specific_contents=None, priority="Low", progress="New", reference=None):
         """Adds a list of items for a given queue
@@ -195,6 +207,11 @@ class Queue(OrchestratorHTTP):
             @progress: sets up the progress bar (default: New)
             @reference: indicates a specific field of the specific content to
             be used as a queue reference.
+
+            Specific Content includes by default the following columns:
+                - BatchID: representing a unique ID for the specific batch of items to be uploaded
+                - ReferenceID: a unique ID of the item
+                - ItemID: if reference is set to true, ads a new field with the reference
         """
         endpoint = "/Queues"
         uipath_svc = "/UiPathODataSvc.BulkAddQueueItems"

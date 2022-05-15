@@ -100,17 +100,33 @@ class QueueItem(OrchestratorHTTP):
         }
         return self._post(url, body=body)
 
-    def set_transaction_status(self, success: bool, reason=None, exception_type=None):
+    def set_transaction_status(self, success: bool, reason=None, details = None, exception_type=None):
         endpoint = f"/Queues({self.id})"
         uipath_svc = "/UiPathODataSvc.SetTransactionResult"
-        transaction_body = {
-            "transactionResult": {
-                "IsSuccessful": True,
-
-            }
-        }
         url = f"{self.base_url}{endpoint}{uipath_svc}"
+        if success:
+            transaction_body = {
+                "transactionResult": {
+                    "IsSuccessful": True,
+
+                }
+            }
+        else:
+            transaction_body = {
+                "transactionResult": {
+                    "IsSuccessful": False,
+                    "ProcessingException" : {
+                        "Reason" : reason,
+                        "Details" : details,
+                        "Type" : exception_type
+                    }
+
+                }
+            }
         return self._post(url, body=transaction_body)
+        
+
+        
 
     def events(self):
         """
