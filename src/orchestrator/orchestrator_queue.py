@@ -76,7 +76,13 @@ class Queue(OrchestratorHTTP):
         }
 
         if reference:
-            format_body_start["transactionData"]["Reference"] = f"{reference}#{batch_id}"
+            try:
+                value = format_body_start["transactionData"]["SpecificContent"][reference]
+                format_body_start["transactionData"]["Reference"] = f"{value}#{batch_id}"
+            except KeyError as err:
+                if reference in err.args:
+                    logging.error(f"Invalid reference: {reference} not found in SpecificContent")
+                    raise Exception(f"Invalid reference: {reference} not found in SpecificContent")
             format_body_start["transactionData"]["SpecificContent"]["ItemID"] = reference
             format_body_start["transactionData"]["SpecificContent"]["ReferenceID"] = ran_uuid
             format_body_start["transactionData"]["SpecificContent"]["BatchID"] = batch_id
