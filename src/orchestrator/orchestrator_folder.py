@@ -213,7 +213,7 @@ class Folder(OrchestratorHTTP):
         else:
             url = f"{self.base_url}{endpoint}?{enc_default}"
         data = self._get(url)["value"]
-        print(len(data))
+        # print(len(data))
         return [Job(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, job["Id"], job["Key"], job["ReleaseName"]) for job in data]
 
     def get_job_keys(self, top="100", options=None):

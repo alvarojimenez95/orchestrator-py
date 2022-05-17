@@ -1,3 +1,4 @@
+from pprint import pprint
 from orchestrator.orchestrator_http import OrchestratorHTTP
 from orchestrator.exceptions import OrchestratorMissingParam
 import requests
@@ -118,11 +119,13 @@ class QueueItem(OrchestratorHTTP):
                     "ProcessingException" : {
                         "Reason" : reason,
                         "Details" : details,
-                        "Type" : exception_type
+                        "Type" : exception_type,
+                        
                     }
 
                 }
             }
+        # pprint(transaction_body)
         return self._post(url, body=transaction_body)
         
 

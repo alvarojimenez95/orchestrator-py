@@ -4,7 +4,7 @@ import random
 import json
 import string
 from pprint import pprint
-
+import logging
 
 from orchestrator.exceptions import OrchestratorAuthException, OrchestratorMissingParam
 
@@ -107,12 +107,14 @@ class OrchestratorHTTP(object):
                 # pprint(kwargs)
                 item_data = kwargs['body']['body']
                 # pprint(json.dumps(item_data))
+                pprint(item_data)
                 r = self.session.request(method, endpoint, json=item_data, headers=headers)
             else:
                 r = self.session.request(method, endpoint, headers=headers)
             # print(endpoint)
-            pprint(f"{r.status_code} ---- {r.url}")
+            logging.debug(f"{r.status_code} ---- {r.url}")
             try:
+                # pprint(r.json())
                 return r.json()
             except requests.exceptions.JSONDecodeError:
                 return r.text

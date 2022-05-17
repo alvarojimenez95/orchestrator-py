@@ -1,4 +1,6 @@
+import logging
 from uuid import uuid4
+import uuid
 from orchestrator.exceptions import OrchestratorMissingParam
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
@@ -53,24 +55,32 @@ class Queue(OrchestratorHTTP):
         data = self._get(url)
         return data
 
-    def start(self, machine_identifier, specific_content=None):
+    def start(self, machine_identifier, specific_content=None, reference=None):
         """
             Starts a given transaction
 
             @machine_identifier: the machine's unique identifier
             @specific_content: the specific content of the transaction
+            @reference: a reference from the specific content 
         """
+        ran_uuid = str(uuid4())
+        batch_id = str(uuid.uuid4())
+        logging.debug("Starting new transaction")
         endpoint = "/Queues/UiPathODataSvc.StartTransaction"
         format_body_start = {
             "transactionData": {
                 "Name": self.name,
                 "RobotIdentifier": machine_identifier,
-                "SpecificContent": specific_content
+                "SpecificContent": specific_content,
             }
         }
-        if not specific_content:
-            format_body_start["transactionData"]["SpecificContent"] = None
-        print(format_body_start)
+
+        if reference:
+            format_body_start["transactionData"]["Reference"] = f"{reference}#{batch_id}"
+            format_body_start["transactionData"]["SpecificContent"]["ItemID"] = reference
+            format_body_start["transactionData"]["SpecificContent"]["ReferenceID"] = ran_uuid
+            format_body_start["transactionData"]["SpecificContent"]["BatchID"] = batch_id
+
         url = f"{self.base_url}{endpoint}"
         return self._post(url, body=format_body_start)
 
@@ -164,7 +174,7 @@ class Queue(OrchestratorHTTP):
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
 
-    def _format_specific_content(self, queue_name, sp_content, reference=None, priority="Low", progress="New", batch_id=None):
+    def _format_specific_content(self, sp_content, reference=None, priority="Low", progress="New", batch_id=None):
         ran_uuid = str(uuid4())
         if reference:
             try:
@@ -173,7 +183,7 @@ class Queue(OrchestratorHTTP):
                 sp_content.update({"BatchID": batch_id})
                 sp_content.update({"ItemID": sp_content[reference]})
                 formatted_sp_content = {
-                    "Name": queue_name,
+                    "Name": self.name,
                     "Priority": priority,
                     "SpecificContent": sp_content,
                     "Progress": progress,
@@ -188,7 +198,7 @@ class Queue(OrchestratorHTTP):
             sp_content.update({"ReferenceID": ran_uuid})
             sp_content.update({"BatchID": batch_id})
             formatted_sp_content = {
-                "Name": queue_name,
+                "Name": self.name,
                 "Priority": priority,
                 "SpecificContent": sp_content,
                 "Progress": progress,
