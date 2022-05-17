@@ -55,13 +55,14 @@ class Queue(OrchestratorHTTP):
         data = self._get(url)
         return data
 
-    def start(self, machine_identifier, specific_content=None, reference=None):
+    def start(self, machine_identifier, specific_content=None, reference=None, fields=None):
         """
             Starts a given transaction
 
             @machine_identifier: the machine's unique identifier
             @specific_content: the specific content of the transaction
             @reference: a reference from the specific content 
+            @fields: a dictionary of additional fields to be added to the specific content
         """
         ran_uuid = str(uuid4())
         batch_id = str(uuid.uuid4())
@@ -74,7 +75,6 @@ class Queue(OrchestratorHTTP):
                 "SpecificContent": specific_content,
             }
         }
-
         if reference:
             try:
                 value = format_body_start["transactionData"]["SpecificContent"][reference]
@@ -86,6 +86,8 @@ class Queue(OrchestratorHTTP):
             format_body_start["transactionData"]["SpecificContent"]["ItemID"] = reference
             format_body_start["transactionData"]["SpecificContent"]["ReferenceID"] = ran_uuid
             format_body_start["transactionData"]["SpecificContent"]["BatchID"] = batch_id
+        if fields:
+            format_body_start["transactionData"]["SpecificContent"].update(fields)
 
         url = f"{self.base_url}{endpoint}"
         return self._post(url, body=format_body_start)

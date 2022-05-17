@@ -33,7 +33,7 @@ item_content = {
 
 batch_id = str(uuid.uuid4())
 print("Empezando la transaccion")
-res = queue.start(machine_identifier=MACHINE_IDENTIFIER, specific_content=item_content, reference="Name")
+res = queue.start(machine_identifier=MACHINE_IDENTIFIER, specific_content=item_content, reference="Name", fields={"doc_type": "updated contract"})
 # pprint(res)
 # time.sleep(2)
 item_id = res["Id"]
