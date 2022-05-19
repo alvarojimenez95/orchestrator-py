@@ -107,7 +107,7 @@ class OrchestratorHTTP(object):
                 # pprint(kwargs)
                 item_data = kwargs['body']['body']
                 # pprint(json.dumps(item_data))
-                pprint(item_data)
+                # pprint(item_data)
                 r = self.session.request(method, endpoint, json=item_data, headers=headers)
             else:
                 r = self.session.request(method, endpoint, headers=headers)

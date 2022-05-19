@@ -9,6 +9,7 @@ __all__ = ["QueueItem"]
 
 
 class QueueItem(OrchestratorHTTP):
+
     def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, queue_name=None, queue_id=None, session=None, item_id=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id,
                          session=session)
@@ -101,7 +102,7 @@ class QueueItem(OrchestratorHTTP):
         }
         return self._post(url, body=body)
 
-    def set_transaction_status(self, success: bool, reason=None, details = None, exception_type=None):
+    def set_transaction_status(self, success: bool, reason=None, details=None, exception_type=None):
         endpoint = f"/Queues({self.id})"
         uipath_svc = "/UiPathODataSvc.SetTransactionResult"
         url = f"{self.base_url}{endpoint}{uipath_svc}"
@@ -116,20 +117,17 @@ class QueueItem(OrchestratorHTTP):
             transaction_body = {
                 "transactionResult": {
                     "IsSuccessful": False,
-                    "ProcessingException" : {
-                        "Reason" : reason,
-                        "Details" : details,
-                        "Type" : exception_type,
-                        
+                    "ProcessingException": {
+                        "Reason": reason,
+                        "Details": details,
+                        "Type": exception_type,
+
                     }
 
                 }
             }
         # pprint(transaction_body)
         return self._post(url, body=transaction_body)
-        
-
-        
 
     def events(self):
         """
@@ -142,3 +140,12 @@ class QueueItem(OrchestratorHTTP):
         uipath_svc = f"/UiPathODataSvc.GetQueueItemEventsHistory(queueItemId={{self.id}})"
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         return self._get(url)
+
+    def make_comment(self, text=None):
+        body = {
+            "Text": text,
+            "QueueItemId": self.id
+        }
+        endpoint = "/QueueItemComments"
+        url = f"{self.base_url}{endpoint}"
+        return self._post(url, body=body)

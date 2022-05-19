@@ -11,6 +11,7 @@ __all__ = ["Queue"]
 
 
 class Queue(OrchestratorHTTP):
+    classes = ["Comments", "Status", "Reference"]
     """
     Constructor. 
 
@@ -269,3 +270,36 @@ class Queue(OrchestratorHTTP):
         endpoint = f"/QueueDefinitions({self.id})"
         url = f"{self.base_url}{endpoint}"
         return self._delete(url)
+
+    def get_queue_item_comments(self, q=None):
+        endpoint = "/QueueItemComments"
+        if q:
+            query_params = urlencode({
+                "$filter": q
+            })
+            url = f"{self.base_url}{endpoint}?{query_params}"
+        url = f"{self.base_url}{endpoint}"
+        return self._get(url)
+
+    def check_duplicate(self, endpoint, value):
+        """
+        Checks if there is an attribute cls 
+        with the value value in the queue. 
+        This checks all items of the queue with the attribute and value
+        indicated
+
+            - `param` cls: possible values are "Comment", "Status", "Reference"
+        """
+        if endpoint not in self.classes:
+            raise NotImplementedError
+        elif endpoint == "Comments":
+            comments = self.get_queue_item_comments()["value"]
+            # print(comments)
+            for comment in comments:
+                # print(comment["Text"])
+                if comment["Text"] == value:
+                    return True
+        elif endpoint == "Status":
+            pass
+        elif endpoint == "Reference":
+            pass

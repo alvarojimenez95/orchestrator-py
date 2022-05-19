@@ -1,4 +1,3 @@
-
 import uuid
 from orchestrator import Orchestrator
 import logging
@@ -27,26 +26,13 @@ folder = client.get_folder_by_id(int(PRE_FOLDER_ID))
 queue = folder.get_queue_by_id(116803)
 
 
-res = queue.check_duplicate(endpoint="Comments", value="This is a comment")
-print(res)
-item_content = {
-    "Name": "Yo",
-    "Apellido": "Test"
-}
-
-batch_id = str(uuid.uuid4())
-print("Empezando la transaccion")
-res = queue.start(machine_identifier=MACHINE_IDENTIFIER, specific_content=item_content, reference="Name", fields={"doc_type": "updated contract"})
-# pprint(res)
-# time.sleep(2)
-item_id = res["Id"]
-print(item_id)
-print("Obteniendo el item")
-item = queue.get_item_by_id(item_id)
-# time.sleep(2)
-item.make_comment(text="This is a comment")
-print("Actualizando el status")
-item.set_transaction_status(success=False, reason="Some reason", details="Some details", exception_type="Retried")
-# pprint(res2)
+comments = queue.get_queue_item_comments()
+pprint(comments)
 
 end = time.time()
+print("Time taken: " + str(end - start))
+# item = queue.get_queue_items()[0]
+# print(item)
+# item = queue.get_item_by_id(234609075)
+# res = item.delete()
+# pprint(res)
