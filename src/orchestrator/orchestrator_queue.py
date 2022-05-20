@@ -133,7 +133,11 @@ class Queue(OrchestratorHTTP):
             @returns: a list of QueueItem objects of the given queue (Maximum number of results: 1000)
         """
         endpoint = "/QueueItems"
-        odata_filter = {"$Filter": f"QueueDefinitionId eq {self.id}"}
+        if "$filter" in options:
+            # print("true")
+            odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and {options['$filter']}"}
+        else:
+            odata_filter = {"$Filter": f"QueueDefinitionId eq {self.id}"}
         if options:
             odata_filter.update(options)
         query_params = urlencode(odata_filter)
@@ -289,6 +293,17 @@ class Queue(OrchestratorHTTP):
         indicated
 
             - `param` cls: possible values are "Comment", "Status", "Reference"
+
+        Example usage: 
+
+        ```py
+        client = Orchestrator()
+        queue = client.get_queue_by_id(188797)
+
+        # checks among all comments in all items, and returns true
+        # if it finds one item with that item comment
+        bool = queue.check_duplicate("Comments", "hello world")
+        ```
         """
         if endpoint not in self.classes:
             raise NotImplementedError
@@ -302,4 +317,5 @@ class Queue(OrchestratorHTTP):
         elif endpoint == "Status":
             pass
         elif endpoint == "Reference":
-            pass
+            item = self.get_queue_items(options={"$filter": f"contains(Reference,'{value}')"})
+            return item
