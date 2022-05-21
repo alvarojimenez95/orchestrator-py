@@ -10,12 +10,14 @@ __all__ = ["QueueItem"]
 
 class QueueItem(OrchestratorHTTP):
 
-    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, queue_name=None, queue_id=None, session=None, item_id=None):
+    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, queue_name=None, queue_id=None, session=None, item_id=None, content=None, reference=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id,
                          session=session)
         if not item_id:
             raise OrchestratorMissingParam(value="item id",
                                            message="Required parameter(s) missing: item_id")
+        self.content = content
+        self.reference = reference
         self.tenant_name = tenant_name
         self.folder_id = folder_id
         self.folder_name = folder_name
@@ -110,15 +112,15 @@ class QueueItem(OrchestratorHTTP):
             transaction_body = {
                 "transactionResult": {
                     "IsSuccessful": True,
-                    "ProcessingException": {
-                        "Reason": reason,
-                        "Details": details,
-                        "Type": exception_type,
+                    # "ProcessingException": {
+                    #     "Reason": reason,
+                    #     "Details": details,
+                    #     "Type": exception_type,
 
-                    },
-                    "Output": {
-                        "fail_reason": fail_reason
-                    }
+                    # },
+                    # "Output": {
+                    #     "fail_reason": fail_reason
+                    # }
 
                 }
             }

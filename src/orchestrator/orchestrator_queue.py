@@ -1,4 +1,5 @@
 import logging
+from pprint import pprint
 from uuid import uuid4
 import uuid
 from orchestrator.exceptions import OrchestratorMissingParam
@@ -11,7 +12,7 @@ __all__ = ["Queue"]
 
 
 class Queue(OrchestratorHTTP):
-    classes = ["Comments", "Status", "Reference"]
+    classes = ["Comments", "Status", "Reference", "SpecificContent"]
     """
     Constructor. 
 
@@ -133,7 +134,7 @@ class Queue(OrchestratorHTTP):
             @returns: a list of QueueItem objects of the given queue (Maximum number of results: 1000)
         """
         endpoint = "/QueueItems"
-        if "$filter" in options:
+        if options and ("$filter" in options.items()):
             # print("true")
             odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and {options['$filter']}"}
         else:
@@ -143,8 +144,31 @@ class Queue(OrchestratorHTTP):
         query_params = urlencode(odata_filter)
         url = f"{self.base_url}{endpoint}?{query_params}"
         data = self._get(url)
+        # pprint(data)
         filt_data = data['value']
-        return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"]) for item in filt_data]
+        return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"]) for item in filt_data]
+
+    def _get_sp_contents(self, options=None):
+        items = self.get_queue_items(options=options)
+        contents = []
+        for item in items:
+            contents.append(item.content)
+        return contents
+
+    def _get_references(self, options=None):
+        items = self.get_queue_items(options=options)
+        references = []
+        for item in items:
+            references.append(item.reference)
+        return references
+
+    def check_duplicate(self, reference, options=None):
+        references = self._get_references(options=options)
+        print(references[0])
+        for ref in references:
+            if reference in str(ref):
+                return True
+        return False
 
     def get_queue_items_ids(self, options=None):
         """
@@ -284,38 +308,3 @@ class Queue(OrchestratorHTTP):
             url = f"{self.base_url}{endpoint}?{query_params}"
         url = f"{self.base_url}{endpoint}"
         return self._get(url)
-
-    def check_duplicate(self, endpoint, value):
-        """
-        Checks if there is an attribute cls 
-        with the value value in the queue. 
-        This checks all items of the queue with the attribute and value
-        indicated
-
-            - `param` cls: possible values are "Comment", "Status", "Reference"
-
-        Example usage: 
-
-        ```py
-        client = Orchestrator()
-        queue = client.get_queue_by_id(188797)
-
-        # checks among all comments in all items, and returns true
-        # if it finds one item with that item comment
-        bool = queue.check_duplicate("Comments", "hello world")
-        ```
-        """
-        if endpoint not in self.classes:
-            raise NotImplementedError
-        elif endpoint == "Comments":
-            comments = self.get_queue_item_comments()["value"]
-            # print(comments)
-            for comment in comments:
-                # print(comment["Text"])
-                if comment["Text"] == value:
-                    return True
-        elif endpoint == "Status":
-            pass
-        elif endpoint == "Reference":
-            item = self.get_queue_items(options={"$filter": f"contains(Reference,'{value}')"})
-            return item

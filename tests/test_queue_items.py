@@ -29,8 +29,8 @@ folder = client.get_folder_by_id(int(PRE_FOLDER_ID))
 queue = folder.get_queue_by_id(116803)
 
 
-res = queue.check_duplicate(endpoint="Reference", value="Yo#8ec21330-694d-4ba6-9763-d7ca4e56f581")
-print(res[0].id)
+# res = queue.check_duplicate(endpoint="Reference", value="Yo#8ec21330-694d-4ba6-9763-d7ca4e56f581")
+# print(res[0].id)
 item_content = {
     "Name": "Yo",
     "Apellido": "Test"
@@ -55,7 +55,7 @@ item = queue.get_item_by_id(item_id)
 # time.sleep(2)
 item.make_comment(text="This is a comment")
 print("Actualizando el status")
-item.set_transaction_status(success=True, reason="Some reason", details="Some details", exception_type="BusinessException", fail_reason="mail")
+item.set_transaction_status(success=False, reason="Some reason", details="Some details", exception_type="BusinessException", fail_reason="mail")
 item.edit(body=body)
 # pprint(res2)
 print(item.id)

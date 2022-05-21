@@ -111,6 +111,9 @@ class OrchestratorHTTP(object):
                 r = self.session.request(method, endpoint, json=item_data, headers=headers)
             else:
                 r = self.session.request(method, endpoint, headers=headers)
+                if r.status_code not in range(200, 400):
+                    logging.error(f"An error ocurred.\nStatus code: {r.status_code}")
+                    print(r.json())
             # print(endpoint)
             logging.debug(f"{r.status_code} ---- {r.url}")
             try:
