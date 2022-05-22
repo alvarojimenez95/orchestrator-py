@@ -4,12 +4,13 @@ from orchestrator.exceptions import OrchestratorMissingParam
 
 
 class Library(OrchestratorHTTP):
-    def __init__(self, client_id, refresh_token, tenant_name, session=None, lib_key=None, lib_id=None, lib_title=None, folder_id=None):
+    def __init__(self, client_id, refresh_token, tenant_name, session=None, lib_key=None, lib_id=None, lib_title=None, folder_id=None, access_token=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
         if not lib_key:
             raise OrchestratorMissingParam(value="library key",
                                            message="Required parameter(s) missing: library key")
         self.tenant_name = tenant_name
+        self.access_token = access_token
         self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
         self.folder_id = folder_id
         self.id = lib_id

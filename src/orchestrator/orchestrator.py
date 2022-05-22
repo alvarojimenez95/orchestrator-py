@@ -92,7 +92,7 @@ class Orchestrator(OrchestratorHTTP):
             url = f"{self.base_url}{endpoint}"
         data = self._get(url)
         filt_data = data['value']
-        return [Folder(self.client_id, self.refresh_token, self.tenant_name, self.session, folder["DisplayName"], folder["Id"]) for folder in filt_data]
+        return [Folder(self.client_id, self.refresh_token, self.tenant_name, self.session, folder["DisplayName"], folder["Id"], access_token=self.access_token) for folder in filt_data]
 
     def get_folder_ids(self, options=None):
         """
@@ -170,7 +170,7 @@ class Orchestrator(OrchestratorHTTP):
         else:
             url = f"{self.base_url}{endpoint}"
         processes = self._get(url)["value"]
-        return [Process(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, process["Id"], process["Title"], process["Version"], process["Key"]) for process in processes]
+        return [Process(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, process["Id"], process["Title"], process["Version"], process["Key"], access_token=self.access_token) for process in processes]
 
     def get_processes_keys(self, options=None):
         """
@@ -203,7 +203,7 @@ class Orchestrator(OrchestratorHTTP):
         url = f"{self.base_url}{endpoint}?{query_param}"
         process = self._get(url)["value"][0]
         return Process(self.client_id, self.refresh_token, self.tenant_name, self.folder_id,
-                       self.session, process["Id"], process["Title"], process["Version"], process["Key"])
+                       self.session, process["Id"], process["Title"], process["Version"], process["Key"], access_token=self.access_token)
 
     def get_libraries(self, options=None):
         """
@@ -220,7 +220,7 @@ class Orchestrator(OrchestratorHTTP):
         else:
             url = f"{self.base_url}{endpoint}"
         libraries = self._get(url)["value"]
-        return [Library(self.client_id, self.refresh_token, self.tenant_name, self.session,  lib["Key"], lib["Id"], lib["Title"], self.folder_id) for lib in libraries]
+        return [Library(self.client_id, self.refresh_token, self.tenant_name, self.session,  lib["Key"], lib["Id"], lib["Title"], self.folder_id, access_token=self.access_token) for lib in libraries]
 
     def get_machines(self, options=None):
         """
@@ -258,4 +258,4 @@ class Orchestrator(OrchestratorHTTP):
         endpoint = f"/Machines({machine_id})"
         url = f"{self.base_url}{endpoint}"
         machine = self._get(url)
-        return Machine(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, machine_id, machine["Key"], machine["Name"])
+        return Machine(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, machine_id, machine["Key"], machine["Name"], access_token=self.access_token)

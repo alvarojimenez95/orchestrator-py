@@ -6,12 +6,13 @@ __all__ = ["ProcessSchedule"]
 
 
 class ProcessSchedule(OrchestratorHTTP):
-    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, session=None, process_id=None, process_name=None):
+    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, session=None, process_id=None, process_name=None, access_token=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id)
         if not tenant_name or not folder_id:
             raise OrchestratorMissingParam(value="tenant_name, folder_id",
                                            message="Required parameter(s) missing: tenant_name, folder_id")
         self.tenant_name = tenant_name
+        self.access_token = access_token
         self.id = process_id
         self.name = process_name
         self.folder_id = folder_id

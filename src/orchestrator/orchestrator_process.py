@@ -7,7 +7,7 @@ __all__ = ["Process"]
 
 
 class Process(OrchestratorHTTP):
-    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, session=None, process_id=None, process_title=None, process_version=None, process_key=None):
+    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, session=None, process_id=None, process_title=None, process_version=None, process_key=None, access_token=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id)
         if not tenant_name or not folder_id:
             raise OrchestratorMissingParam(value="tenant_name, folder_id",
@@ -15,6 +15,7 @@ class Process(OrchestratorHTTP):
         self.tenant_name = tenant_name
         self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
         self.id = process_id
+        self.access_token = access_token
         self.tenant_name = tenant_name
         self.title = process_title
         self.version = process_version

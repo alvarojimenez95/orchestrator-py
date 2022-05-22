@@ -164,7 +164,7 @@ class Folder(OrchestratorHTTP):
             url = f"{self.base_url}{endpoint}"
         data = self._get(url)
         filt_data = data["value"]
-        return [ProcessSchedule(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, process["Id"], process["Name"]) for process in filt_data]
+        return [ProcessSchedule(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, process["Id"], process["Name"], access_token=self.access_token) for process in filt_data]
 
     def get_schedule_ids(self, options=None):
         """
@@ -216,7 +216,7 @@ class Folder(OrchestratorHTTP):
             url = f"{self.base_url}{endpoint}?{enc_default}"
         data = self._get(url)["value"]
         # print(len(data))
-        return [Job(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, job["Id"], job["Key"], job["ReleaseName"]) for job in data]
+        return [Job(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, job["Id"], job["Key"], job["ReleaseName"], access_token=self.access_token) for job in data]
 
     def get_job_keys(self, top="100", options=None):
         """
@@ -233,7 +233,7 @@ class Folder(OrchestratorHTTP):
         query_param = urlencode({"$filter": f"Key eq {key}"})
         url = f"{self.base_url}{endpoint}?{query_param}"
         data = self._get(url)["value"][0]
-        return Job(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, data["Id"], data["Key"], data["ReleaseName"])
+        return Job(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, data["Id"], data["Key"], data["ReleaseName"], access_token=self.access_token)
 
     def job_triggers(self, options=None):
         endpoint = "/JobTriggers"

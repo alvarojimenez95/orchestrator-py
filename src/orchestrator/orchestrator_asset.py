@@ -37,7 +37,7 @@ class Asset(OrchestratorHTTP):
 
     """
 
-    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, session=None, asset_id=None, asset_name=None, token=None):
+    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, session=None, asset_id=None, asset_name=None, access_token=None):
         """Constructor"""
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
         if not asset_id:
@@ -46,6 +46,7 @@ class Asset(OrchestratorHTTP):
         self.tenant_name = tenant_name
         self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
         self.folder_id = folder_id
+        self.access_token = access_token
         self.folder_name = folder_name
         self.id = asset_id
         self.name = asset_name
