@@ -125,7 +125,7 @@ class Queue(OrchestratorHTTP):
             ========
             @returns: an Item object with the specified item id
         """
-        return QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, self.session, item_id)
+        return QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, self.session, item_id, access_token=self.access_token)
 
     def get_queue_items(self, options=None):
         """
@@ -148,7 +148,7 @@ class Queue(OrchestratorHTTP):
         data = self._get(url)
         # pprint(data)
         filt_data = data['value']
-        return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"]) for item in filt_data]
+        return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"], access_token=self.access_token) for item in filt_data]
 
     def _get_sp_contents(self, options=None):
         items = self.get_queue_items(options=options)
