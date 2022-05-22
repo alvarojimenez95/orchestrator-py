@@ -16,7 +16,7 @@ class QueueItem(OrchestratorHTTP):
         if not item_id:
             raise OrchestratorMissingParam(value="item id",
                                            message="Required parameter(s) missing: item_id")
-        self.content = content
+        self.specific_content = content
         self.access_token = access_token
         self.reference = reference
         self.tenant_name = tenant_name
