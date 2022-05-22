@@ -36,12 +36,14 @@ class Folder(OrchestratorHTTP):
     :type folder_name : str
     """
 
-    def __init__(self, client_id, refresh_token, tenant_name, session=None, folder_name=None,  folder_id=None):
+    def __init__(self, client_id, refresh_token, tenant_name, session=None, folder_name=None,  folder_id=None, access_token=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
         if not tenant_name or not folder_id:
             raise OrchestratorMissingParam(value="tenant_name",
                                            message="Required parameter missing: tenant_name")
         self.id = folder_id
+        self.access_token = access_token
+        self.refresh_token = refresh_token
         self.tenant_name = tenant_name
         self.name = folder_name
         self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
@@ -75,7 +77,7 @@ class Folder(OrchestratorHTTP):
             url = f"{self.base_url}{endpoint}"
         data = self._get(url)
         filt_data = data['value']
-        return [Queue(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, queue["Name"],  queue["Id"]) for queue in filt_data]
+        return [Queue(self.client_id, self.access_token, self.tenant_name, self.id, self.name, self.session, queue["Name"],  queue["Id"], access_token=self.access_token) for queue in filt_data]
 
     def get_queue_ids(self, options=None):
         """
@@ -111,7 +113,7 @@ class Folder(OrchestratorHTTP):
 
     def get_queue_by_id(self, queue_id):
         queues = self.get_queue_ids()
-        return Queue(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, queues[queue_id], queue_id=int(queue_id))
+        return Queue(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, queues[queue_id], queue_id=int(queue_id), access_token=self.access_token)
 
     def get_assets(self, options=None):
         """
@@ -128,7 +130,7 @@ class Folder(OrchestratorHTTP):
         # pprint(data)
         # pprint(self.id)
         filt_data = data['value']
-        return [Asset(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, asset["Id"], asset["Name"]) for asset in filt_data]
+        return [Asset(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, asset["Id"], asset["Name"], access_token=self.access_token) for asset in filt_data]
 
     def get_asset_ids(self, options=None):
         """
@@ -148,7 +150,7 @@ class Folder(OrchestratorHTTP):
 
     def get_asset_by_id(self, asset_id):
         assets = self.get_asset_ids()
-        return Asset(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, asset_id, assets[asset_id])
+        return Asset(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, asset_id, assets[asset_id], access_token=self.access_token)
 
     def create_asset(self, body=None):
         pass

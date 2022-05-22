@@ -26,7 +26,7 @@ class Queue(OrchestratorHTTP):
     @queue_id: the queue id
     """
 
-    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, session=None, queue_name=None, queue_id=None):
+    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, session=None, queue_name=None, queue_id=None, access_token=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
         if not queue_id:
             raise OrchestratorMissingParam(value="queue_id",
@@ -37,6 +37,8 @@ class Queue(OrchestratorHTTP):
         self.folder_id = folder_id
         self.tenant_name = tenant_name
         self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
+        self.access_token = access_token
+        self.refresh_token = refresh_token
         if session:
             self.session = session
         else:

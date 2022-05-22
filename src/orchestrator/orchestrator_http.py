@@ -15,7 +15,7 @@ class OrchestratorHTTP(object):
     oauth_endpoint = "/oauth/token"
     _now = datetime.now()
     _token_expires = datetime.now()
-    _access_token = None
+    access_token = None
 
     def __init__(
         self,
@@ -74,13 +74,13 @@ class OrchestratorHTTP(object):
             token_data = r.json()
             token = token_data["access_token"]
             expiracy = token_data["expires_in"]
-            self._access_token = token
+            self.access_token = token
             self._token_expires = expiracy
         except Exception as err:
             print(err)
 
     def _auth_header(self):
-        return {"Authorization": f"Bearer {self._access_token}"}
+        return {"Authorization": f"Bearer {self.access_token}"}
 
     @staticmethod
     def _content_header():
@@ -93,10 +93,13 @@ class OrchestratorHTTP(object):
 
     def _internal_call(self, method, endpoint, *args, **kwargs):
         # pprint(self.folder_id)
-        if self.expired:
-            self._get_token()
-            self.expired = False
+        # if self.expired:
+        #     logging.debug("Token has expired")
+        #     self._get_token()
+        #     self.expired = False
+
         headers = self._auth_header()
+        pprint(headers)
         if method == "POST":
             headers.update(self._content_header())
         if self.folder_id:
@@ -111,6 +114,12 @@ class OrchestratorHTTP(object):
                 r = self.session.request(method, endpoint, json=item_data, headers=headers)
             else:
                 r = self.session.request(method, endpoint, headers=headers)
+                print(r.status_code)
+                if r.status_code == 401:
+                    self._get_token()
+                    headers = self._auth_header()
+                    r_retry = self.session.request(method, endpoint, headers=headers)
+                    return r_retry.json()
                 if r.status_code not in range(200, 400):
                     logging.error(f"An error ocurred.\nStatus code: {r.status_code}")
                     print(r.json())

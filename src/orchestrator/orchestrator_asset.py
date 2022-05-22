@@ -37,7 +37,7 @@ class Asset(OrchestratorHTTP):
 
     """
 
-    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, session=None, asset_id=None, asset_name=None):
+    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, session=None, asset_id=None, asset_name=None, token=None):
         """Constructor"""
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
         if not asset_id:
