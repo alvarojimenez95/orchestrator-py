@@ -99,7 +99,7 @@ class OrchestratorHTTP(object):
         #     self.expired = False
 
         headers = self._auth_header()
-        pprint(headers)
+        # pprint(headers)
         if method == "POST":
             headers.update(self._content_header())
         if self.folder_id:
@@ -114,7 +114,7 @@ class OrchestratorHTTP(object):
                 r = self.session.request(method, endpoint, json=item_data, headers=headers)
             else:
                 r = self.session.request(method, endpoint, headers=headers)
-                print(r.status_code)
+                # print(r.status_code)
                 if r.status_code == 401:
                     self._get_token()
                     headers = self._auth_header()
@@ -122,7 +122,7 @@ class OrchestratorHTTP(object):
                     return r_retry.json()
                 if r.status_code not in range(200, 400):
                     logging.error(f"An error ocurred.\nStatus code: {r.status_code}")
-                    print(r.json())
+                    # print(r.json())
             # print(endpoint)
             logging.debug(f"{r.status_code} ---- {r.url}")
             try:
