@@ -136,17 +136,30 @@ class Queue(OrchestratorHTTP):
             @returns: a list of QueueItem objects of the given queue (Maximum number of results: 1000)
         """
         endpoint = "/QueueItems"
-        if options and ("$filter" in options.items()):
-            # print("true")
+        if options and ("$filter" in options):
+            print("true")
             odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and {options['$filter']}"}
         else:
             odata_filter = {"$Filter": f"QueueDefinitionId eq {self.id}"}
-        if options:
-            odata_filter.update(options)
+        # if options:
+        #     odata_filter.update(options)
         query_params = urlencode(odata_filter)
         url = f"{self.base_url}{endpoint}?{query_params}"
         data = self._get(url)
         # pprint(data)
+        filt_data = data['value']
+        return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"], access_token=self.access_token) for item in filt_data]
+
+    def get_queue_items_by_status(self, status):
+        """
+        Returns a list of QueueItems with the status 
+        as indicated in the argument.
+        """
+        endpoint = "/QueueItems"
+        odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and Status eq '{status}'"}
+        query_params = urlencode(odata_filter)
+        url = f"{self.base_url}{endpoint}?{query_params}"
+        data = self._get(url)
         filt_data = data['value']
         return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"], access_token=self.access_token) for item in filt_data]
 
@@ -164,13 +177,26 @@ class Queue(OrchestratorHTTP):
             references.append(item.reference)
         return references
 
-    def check_duplicate(self, reference, options=None):
-        references = self._get_references(options=options)
-        print(references[0])
-        for ref in references:
-            if reference in str(ref):
-                return True
-        return False
+    def check_duplicate(self, reference):
+        """
+        Given a queue reference, it checks whether a given queue 
+        has already appeared in the queue once.
+
+        Parameters:
+
+            - `param` reference: the reference or part of it of the new queue item
+
+        Returns: 
+            If a reference is found in the queue with the given status, it returns the first
+            item whose reference matches the one indicated as an argument. Otherwise it returns
+            False.
+        """
+        filt_items = self.get_queue_items(options={"$filter": f"contains(Reference, '{reference}')"})
+
+        if len(filt_items) > 0:
+            return filt_items[0]
+        else:
+            return False
 
     def get_queue_items_ids(self, options=None):
         """

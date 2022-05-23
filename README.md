@@ -8,6 +8,8 @@ This is a work in progress. You can take a look at the documentation [here](http
 
 ## Quick Start
 
+---
+
 To initialize the class provide an instance of the `Orchestrator` object with the following credentials:
 
 - `client_id`: your client id.
@@ -52,4 +54,12 @@ dict_ids = client.get_folder_ids()
 
 # returns a single folder by id
 folder = client.get_folder_by_id(1263510)
+```
+
+From a folder, one can access several entities that belong to
+a given folder in the Orchestrator cloud, such as queues, assets or process schedules:
+
+```py
+# returns a single queue by id
+queue = folder.get_queue_by_id(12456)
 ```

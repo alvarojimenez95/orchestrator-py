@@ -122,7 +122,7 @@ class OrchestratorHTTP(object):
                     return r_retry.json()
                 if r.status_code not in range(200, 400):
                     logging.error(f"An error ocurred.\nStatus code: {r.status_code}")
-                    # print(r.json())
+                    print(r.json())
             # print(endpoint)
             logging.debug(f"{r.status_code} ---- {r.url}")
             try:
