@@ -1,10 +1,10 @@
-.. Orchestrator documentation master file, created by
-   sphinx-quickstart on Sat Apr 30 13:40:24 2022.
+.. Orchestrator Package documentation master file, created by
+   sphinx-quickstart on Mon May 23 12:49:16 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Orchestrator's documentation!
-========================================
+Welcome to Orchestrator Package's documentation!
+================================================
 
 .. toctree::
    :maxdepth: 2

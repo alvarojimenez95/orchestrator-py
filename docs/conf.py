@@ -10,19 +10,19 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import orchestrator
+import orchestrator.orchestrator
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Orchestrator'
+project = 'Orchestrator Package'
 copyright = '2022, Alvaro Jimenez'
 author = 'Alvaro Jimenez'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.3'
+release = '0.2.23'
 
 
 # -- General configuration ---------------------------------------------------

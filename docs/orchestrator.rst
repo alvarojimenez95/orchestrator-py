@@ -4,7 +4,7 @@ orchestrator package
 Submodules
 ----------
 
-Exceptions
+orchestrator.exceptions module
 ------------------------------
 
 .. automodule:: orchestrator.exceptions
@@ -12,7 +12,7 @@ Exceptions
    :undoc-members:
    :show-inheritance:
 
-Orchestrator
+orchestrator.orchestrator module
 --------------------------------
 
 .. automodule:: orchestrator.orchestrator
@@ -20,7 +20,7 @@ Orchestrator
    :undoc-members:
    :show-inheritance:
 
-Asset
+orchestrator.orchestrator\_asset module
 ---------------------------------------
 
 .. automodule:: orchestrator.orchestrator_asset
@@ -28,7 +28,7 @@ Asset
    :undoc-members:
    :show-inheritance:
 
-Folder
+orchestrator.orchestrator\_folder module
 ----------------------------------------
 
 .. automodule:: orchestrator.orchestrator_folder
@@ -36,7 +36,7 @@ Folder
    :undoc-members:
    :show-inheritance:
 
-Orchestrator HTTP
+orchestrator.orchestrator\_http module
 --------------------------------------
 
 .. automodule:: orchestrator.orchestrator_http
@@ -44,7 +44,7 @@ Orchestrator HTTP
    :undoc-members:
    :show-inheritance:
 
-Job
+orchestrator.orchestrator\_job module
 -------------------------------------
 
 .. automodule:: orchestrator.orchestrator_job
@@ -52,7 +52,7 @@ Job
    :undoc-members:
    :show-inheritance:
 
-Library
+orchestrator.orchestrator\_library module
 -----------------------------------------
 
 .. automodule:: orchestrator.orchestrator_library
@@ -60,7 +60,23 @@ Library
    :undoc-members:
    :show-inheritance:
 
-Process
+orchestrator.orchestrator\_logs module
+--------------------------------------
+
+.. automodule:: orchestrator.orchestrator_logs
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+orchestrator.orchestrator\_machine module
+-----------------------------------------
+
+.. automodule:: orchestrator.orchestrator_machine
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+orchestrator.orchestrator\_process module
 -----------------------------------------
 
 .. automodule:: orchestrator.orchestrator_process
@@ -68,7 +84,7 @@ Process
    :undoc-members:
    :show-inheritance:
 
-Process Schedule
+orchestrator.orchestrator\_process\_schedule module
 ---------------------------------------------------
 
 .. automodule:: orchestrator.orchestrator_process_schedule
@@ -76,7 +92,7 @@ Process Schedule
    :undoc-members:
    :show-inheritance:
 
-Queue
+orchestrator.orchestrator\_queue module
 ---------------------------------------
 
 .. automodule:: orchestrator.orchestrator_queue
@@ -84,7 +100,7 @@ Queue
    :undoc-members:
    :show-inheritance:
 
-Queue Item
+orchestrator.orchestrator\_queue\_item module
 ---------------------------------------------
 
 .. automodule:: orchestrator.orchestrator_queue_item
