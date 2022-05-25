@@ -191,7 +191,7 @@ class Queue(OrchestratorHTTP):
             item whose reference matches the one indicated as an argument. Otherwise it returns
             False.
         """
-        filt_items = self.get_queue_items(options={"$filter": f"contains(Reference, '{reference}')"})
+        filt_items = self.get_queue_items(options={"$filter": f"contains(Reference, '{reference}') and Status eq 'Successful'"})
 
         if len(filt_items) > 0:
             return filt_items[0]
@@ -298,7 +298,7 @@ class Queue(OrchestratorHTTP):
         format_body_queue = {
             "commitType": "StopOnFirstFailure",
             "queueName": self.name,
-            "queueItems": [self._format_specific_content(queue_name=self.name, sp_content=sp_content, reference=reference, priority=priority, progress=progress, batch_id=batch_id) for sp_content in specific_contents]
+            "queueItems": [self._format_specific_content(sp_content=sp_content, reference=reference, priority=priority, progress=progress, batch_id=batch_id) for sp_content in specific_contents]
         }
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
