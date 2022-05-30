@@ -2,6 +2,7 @@ import logging
 from pprint import pprint
 from uuid import uuid4
 import uuid
+import json
 from orchestrator.exceptions import OrchestratorMissingParam
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
@@ -244,6 +245,7 @@ class Queue(OrchestratorHTTP):
 
     def _format_specific_content(self, sp_content, reference=None, priority="Low", progress="New", batch_id=None):
         ran_uuid = str(uuid4())
+
         if reference:
             try:
                 ref_uuid = {"Reference": f"{sp_content[reference]}#{batch_id}"}
@@ -274,6 +276,28 @@ class Queue(OrchestratorHTTP):
             formatted_sp_content.update(ref_uuid)
             return formatted_sp_content
 
+    def _format_dataframe(self, df):
+        specific_contents = []
+        for i in df.index:
+            specific_contents.append(df.iloc[i].to_json())
+        # pprint(specific_contents)
+        return specific_contents
+
+    def bulk_dataframe(self, df, priority="Low", progress="New", reference=None):
+        """Adds a dataframe of items to a given queue"""
+        endpoint = "/Queues"
+        uipath_svc = "/UiPathODataSvc.BulkAddQueueItems"
+        url = f"{self.base_url}{endpoint}{uipath_svc}"
+        sp_contents = self._format_dataframe(df=df)
+        batch_id = str(uuid4())
+        format_body_queue = {
+            "commitType": "StopOnFirstFailure",
+            "queueName": self.name,
+            "queueItems": [self._format_specific_content(sp_content=json.loads(sp_content), reference=reference, priority=priority, progress=progress, batch_id=batch_id) for sp_content in sp_contents]
+        }
+        # pprint(format_body_queue)
+        return self._post(url, body=format_body_queue)
+
     def bulk_create_items(self, specific_contents=None, priority="Low", progress="New", reference=None):
         """Adds a list of items for a given queue
             @param specific_content: dictionary of key value pairs. It does not
@@ -293,6 +317,7 @@ class Queue(OrchestratorHTTP):
         """
         endpoint = "/Queues"
         uipath_svc = "/UiPathODataSvc.BulkAddQueueItems"
+        print(type(specific_contents[0]))
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         if not specific_contents:
             raise OrchestratorMissingParam(value="specific_contents", message="specific contents cannot be null")

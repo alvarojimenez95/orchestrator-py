@@ -5,7 +5,7 @@ import os
 from pprint import pprint
 import json
 import logging
-
+from jt_ref.core.popsql.read_query import read_query
 logging.basicConfig(filename="test.log", filemode="w", level=logging.DEBUG, format='%(name)s - %(levelname)s - %(message)s')
 
 load_dotenv()
@@ -23,14 +23,10 @@ client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_n
 # print(client)
 # pprint(client.get_folder_ids())
 folder = client.get_folder_by_id(int(PRE_FOLDER_ID))
-client.get_folder_by_id(int(PRE_FOLDER_ID))
-client.get_folder_by_id(int(PRE_FOLDER_ID))
-folder2 = client.get_folder_by_id(int(PRE_FOLDER_ID))
-client.get_folder_by_id(int(PRE_FOLDER_ID))
-client.get_folder_by_id(int(PRE_FOLDER_ID))
-print("Orchestrator access token is " + str(client.access_token))
-client.get_machines()
+
+
 # print(client._access_token)
-client.get_folder_by_id(int(PRE_FOLDER_ID))
 queue = folder.get_queue_by_id(116803)
-print("Queue access token is " + str(queue.access_token))
+df = read_query(url="https://popsql.com/share/queries/-MuUzzzIw4AwYPFCDlZk/last_run.csv?access_token=209eaa1dfbe68d1e6337abeccf1d2430", path="tests", keep=True)
+queue.bulk_dataframe(df=df, reference="hiring_id")
+# print("Queue access token is " + str(queue.access_token))
