@@ -59,7 +59,7 @@ class Queue(OrchestratorHTTP):
         data = self._get(url)
         return data
 
-    def start(self, machine_identifier, specific_content=None, reference=None, fields=None):
+    def start(self, machine_identifier, specific_content=None, references=None, separator="-", fields=None):
         """
             Starts a given transaction
 
@@ -79,10 +79,13 @@ class Queue(OrchestratorHTTP):
                 "SpecificContent": specific_content,
             }
         }
-        if reference:
+        if references:
             try:
-                value = format_body_start["transactionData"]["SpecificContent"][reference]
-                format_body_start["transactionData"]["Reference"] = f"{value}#{batch_id}"
+                ref = ""
+                for reference in references:
+                    value = format_body_start["transactionData"]["SpecificContent"][reference]
+                    ref += value+separator
+                format_body_start["transactionData"]["Reference"] = f"{ref[:-1]}#{batch_id}"
             except KeyError as err:
                 if reference in err.args:
                     logging.error(f"Invalid reference: {reference} not found in SpecificContent")
@@ -298,7 +301,7 @@ class Queue(OrchestratorHTTP):
         format_body_queue = {
             "commitType": "StopOnFirstFailure",
             "queueName": self.name,
-            "queueItems": [self._format_specific_content(sp_content=sp_content, reference=reference, priority=priority, progress=progress, batch_id=batch_id) for sp_content in specific_contents]
+            "queueItems": [self._format_specific_content(queue_name=self.name, sp_content=sp_content, reference=reference, priority=priority, progress=progress, batch_id=batch_id) for sp_content in specific_contents]
         }
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)

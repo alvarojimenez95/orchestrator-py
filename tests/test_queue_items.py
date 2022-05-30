@@ -33,6 +33,7 @@ queue = folder.get_queue_by_id(116803)
 # print(res[0].id)
 item_content = {
     "Name": "Yo",
+    "Id": "103945923",
     "Apellido": "Test"
 }
 
@@ -44,7 +45,7 @@ body = {
 
 batch_id = str(uuid.uuid4())
 print("Empezando la transaccion")
-res = queue.start(machine_identifier=MACHINE_IDENTIFIER, specific_content=item_content, reference="Name", fields={"doc_type": "updated contract"})
+res = queue.start(machine_identifier=MACHINE_IDENTIFIER, specific_content=item_content, references=["Name", "Id"], fields={"doc_type": "updated contract"})
 # pprint(res)
 # time.sleep(2)
 item_id = res["Id"]
