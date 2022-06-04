@@ -7,6 +7,7 @@ from orchestrator.exceptions import OrchestratorMissingParam
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
 from urllib.parse import urlencode
+
 from orchestrator.orchestrator_queue_item import QueueItem
 
 __all__ = ["Queue"]
@@ -15,12 +16,12 @@ __all__ = ["Queue"]
 class Queue(OrchestratorHTTP):
     classes = ["Comments", "Status", "Reference", "SpecificContent"]
     """
-    Constructor. 
+    Constructor.
 
-    @client_id: the client id 
-    @refresh_token: a refresh token  
+    @client_id: the client id
+    @refresh_token: a refresh token
     @tenant_name: account's logical name
-    @folder_id: the folder id 
+    @folder_id: the folder id
     @folder_name: the folder name
     @session: a session object (options)
     @queue_name: the queue name
@@ -53,7 +54,7 @@ class Queue(OrchestratorHTTP):
             Returns information about the queue
 
             @returns: dictionary with more in depth information
-            about the queue 
+            about the queue
         """
         endpoint = f"/QueueDefinitions({self.id})"
         url = f"{self.base_url}{endpoint}"
@@ -66,7 +67,7 @@ class Queue(OrchestratorHTTP):
 
             @machine_identifier: the machine's unique identifier
             @specific_content: the specific content of the transaction
-            @reference: a reference from the specific content 
+            @reference: a reference from the specific content
             @fields: a dictionary of additional fields to be added to the specific content
         """
         ran_uuid = str(uuid4())
@@ -141,22 +142,21 @@ class Queue(OrchestratorHTTP):
         """
         endpoint = "/QueueItems"
         if options and ("$filter" in options):
-            print("true")
-            odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and {options['$filter']}"}
+            print(options["$filter"])
+            odata_filter = {"$filter": f"{options['$filter']} and QueueDefinitionId eq {self.id}"}
         else:
-            odata_filter = {"$Filter": f"QueueDefinitionId eq {self.id}"}
-        # if options:
-        #     odata_filter.update(options)
+            odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and Status in ('Abandoned', 'Deleted') eq false"}
+
         query_params = urlencode(odata_filter)
         url = f"{self.base_url}{endpoint}?{query_params}"
         data = self._get(url)
-        # pprint(data)
+        pprint(data)
         filt_data = data['value']
         return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"], access_token=self.access_token) for item in filt_data]
 
     def get_queue_items_by_status(self, status):
         """
-        Returns a list of QueueItems with the status 
+        Returns a list of QueueItems with the status
         as indicated in the argument.
         """
         endpoint = "/QueueItems"
@@ -183,14 +183,14 @@ class Queue(OrchestratorHTTP):
 
     def check_duplicate(self, reference):
         """
-        Given a queue reference, it checks whether a given queue 
+        Given a queue reference, it checks whether a given queue
         has already appeared in the queue once.
 
         Parameters:
 
             - `param` reference: the reference or part of it of the new queue item
 
-        Returns: 
+        Returns:
             If a reference is found in the queue with the given status, it returns the first
             item whose reference matches the one indicated as an argument. Otherwise it returns
             False.
@@ -204,10 +204,10 @@ class Queue(OrchestratorHTTP):
 
     def get_queue_items_ids(self, options=None):
         """
-            Returns a list of dictionaries with the queue 
-            item ids 
+            Returns a list of dictionaries with the queue
+            item ids
 
-            @options: dictionary of odata filtering options 
+            @options: dictionary of odata filtering options
             ========
             @returns: a dictionary where the keys are the queue item
             ids of the given queue and the values the queue name
@@ -301,9 +301,9 @@ class Queue(OrchestratorHTTP):
     def bulk_create_items(self, specific_contents=None, priority="Low", progress="New", reference=None):
         """Adds a list of items for a given queue
             @param specific_content: dictionary of key value pairs. It does not
-            admit nested dictionaries. If you want to be able to pass a dictionary 
-            as a key value pair inside the specific content attribute, you need to 
-                                json.dumps(dict) 
+            admit nested dictionaries. If you want to be able to pass a dictionary
+            as a key value pair inside the specific content attribute, you need to
+                                json.dumps(dict)
             first for it to work.
             @priority: sets up the priority (default: Low)
             @progress: sets up the progress bar (default: New)
@@ -332,7 +332,7 @@ class Queue(OrchestratorHTTP):
         return self._post(url, body=format_body_queue)
 
     def edit_queue(self, name=None, description=None):
-        """Edits the queue with a new name and a new 
+        """Edits the queue with a new name and a new
         descriptions
 
         @name: the new name of the queue

@@ -124,6 +124,7 @@ class OrchestratorHTTP(object):
                     logging.error(f"An error ocurred.\nStatus code: {r.status_code}")
                     # print(r.json())
             # print(endpoint)
+            print(r.url)
             logging.debug(f"{r.status_code} ---- {r.url}")
             try:
                 # pprint(r.json())

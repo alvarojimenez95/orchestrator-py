@@ -27,6 +27,6 @@ folder = client.get_folder_by_id(int(PRE_FOLDER_ID))
 
 # print(client._access_token)
 queue = folder.get_queue_by_id(116803)
-df = read_query(url="https://popsql.com/share/queries/-MuUzzzIw4AwYPFCDlZk/last_run.csv?access_token=209eaa1dfbe68d1e6337abeccf1d2430", path="tests", keep=True)
+df = read_query(url="https://popsql.com/share/queries/-MuUzzzIw4AwYPFCDlZk/last_run.csv?access_token=209eaa1dfbe68d1e6337abeccf1d2430", path="tests", keep=False)
 queue.bulk_dataframe(df=df, reference="hiring_id")
 # print("Queue access token is " + str(queue.access_token))
