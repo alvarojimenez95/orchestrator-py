@@ -326,7 +326,7 @@ class Queue(OrchestratorHTTP):
         format_body_queue = {
             "commitType": "StopOnFirstFailure",
             "queueName": self.name,
-            "queueItems": [self._format_specific_content(queue_name=self.name, sp_content=sp_content, reference=reference, priority=priority, progress=progress, batch_id=batch_id) for sp_content in specific_contents]
+            "queueItems": [self._format_specific_content(sp_content=sp_content, reference=reference, priority=priority, progress=progress, batch_id=batch_id) for sp_content in specific_contents]
         }
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
