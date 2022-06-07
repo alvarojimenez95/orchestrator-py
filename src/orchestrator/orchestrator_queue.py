@@ -86,7 +86,7 @@ class Queue(OrchestratorHTTP):
                 ref = ""
                 for reference in references:
                     value = format_body_start["transactionData"]["SpecificContent"][reference]
-                    ref += value+separator
+                    ref += str(value)+separator
                 format_body_start["transactionData"]["Reference"] = f"{ref[:-1]}#{batch_id}"
             except KeyError as err:
                 if reference in err.args:
