@@ -1,5 +1,3 @@
-![Tests](https://github.com/alvarojimenez95/orchestrator-py/actions/workflows/tests.yml/badge.svg)
-
 # Python-Orchestrator
 
 A library build to handle the [Orchestrator API](https://docs.uipath.com/orchestrator/reference/api-references).
