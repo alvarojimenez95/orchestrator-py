@@ -9,6 +9,7 @@ class Library(OrchestratorHTTP):
         if not lib_key:
             raise OrchestratorMissingParam(value="library key",
                                            message="Required parameter(s) missing: library key")
+        self.client_id = client_id
         self.tenant_name = tenant_name
         self.access_token = access_token
         self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"

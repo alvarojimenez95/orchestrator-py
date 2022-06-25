@@ -1,5 +1,4 @@
 
-from typing import List
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
 import json
@@ -8,7 +7,7 @@ from orchestrator.orchestrator_folder import Folder
 from orchestrator.orchestrator_library import Library
 from orchestrator.orchestrator_process import Process
 from orchestrator.orchestrator_machine import Machine
-
+from pprint import pprint
 
 __all__ = ["Orchestrator"]
 
@@ -119,8 +118,8 @@ class Orchestrator(OrchestratorHTTP):
         @returns: a Folder object with the specified folder id
         """
         ids = self.get_folder_ids()
-        self.folder_id = folder_id
-        folder_name = ids[folder_id]
+        self.folder_id = int(folder_id)
+        folder_name = ids[int(folder_id)]
         return Folder(client_id=self.client_id, refresh_token=self.refresh_token, tenant_name=self.tenant_name,  session=self.session, folder_name=folder_name, folder_id=int(folder_id), access_token=self.access_token)
 
     def get_folder_by_name(self, folder_name):
@@ -131,20 +130,11 @@ class Orchestrator(OrchestratorHTTP):
             ============
             @returns: a Folder object with the specified folder_name
         """
-        pass
-
-    def usernames(self, options=None):
-        """
-            No se por que no va
-        """
-        endpoint = "/Sessions"
-        uipath_svc = "/UiPath.Server,Configuration.OData.GetUsernames"
-        if options:
-            query_params = urlencode(options)
-            url = f"{self.base_url}{endpoint}{uipath_svc}?{query_params}"
-        else:
-            url = f"{self.base_url}{endpoint}{uipath_svc}"
-        return self._get(url)
+        folders = self.get_folders()
+        for folder in folders:
+            if folder.name == folder_name:
+                return folder
+        raise Exception(f"Folder {folder_name} not found")
 
     def permissions(self, options=None):
         endpoint = "/Permissions"
@@ -154,56 +144,6 @@ class Orchestrator(OrchestratorHTTP):
         else:
             url = f"{self.base_url}{endpoint}"
         return self._get(url)
-
-    def get_processes(self, options=None):
-        """
-        Gets all the processes of a given organization
-
-        @options: a dictionary of odata filtering options
-        ========
-        @returns: a list of Processes of the given organization
-        """
-        endpoint = "/Processes"
-        if options:
-            query_params = urlencode(options)
-            url = f"{self.base_url}{endpoint}?{query_params}"
-        else:
-            url = f"{self.base_url}{endpoint}"
-        processes = self._get(url)["value"]
-        return [Process(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, process["Id"], process["Title"], process["Version"], process["Key"], access_token=self.access_token) for process in processes]
-
-    def get_processes_keys(self, options=None):
-        """
-            Returns a dictionary with the processes keys
-
-            @options: dictionary of odata filtering options
-            ========
-            @returns: a dictionary where the keys are the process'
-            key and the values the process' title of the processes 
-            in the given organization
-        """
-        processes = self.get_processes(options=options)
-        ids = {}
-        for process in processes:
-            ids.update({process.key: process.title})
-        return ids
-
-    def get_process_by_key(self, process_key):
-        """
-        Returns a single process by is key
-
-        @process_key: the key of the process 
-        ============
-        @returns: a Process object with the specified process key 
-        """
-        query_param = urlencode({
-            "$filter": f"Key eq '{process_key}"
-        })
-        endpoint = "/Processes"
-        url = f"{self.base_url}{endpoint}?{query_param}"
-        process = self._get(url)["value"][0]
-        return Process(self.client_id, self.refresh_token, self.tenant_name, self.folder_id,
-                       self.session, process["Id"], process["Title"], process["Version"], process["Key"], access_token=self.access_token)
 
     def get_libraries(self, options=None):
         """
@@ -233,7 +173,7 @@ class Orchestrator(OrchestratorHTTP):
         else:
             url = f"{self.base_url}{endpoint}"
         data = self._get(url)["value"]
-        return [Machine(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, machine["Id"], machine["Key"], machine["Name"]) for machine in data]
+        return [Machine(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, machine["Id"], machine["Key"], machine["Name"], self.access_token) for machine in data]
 
     def get_machine_ids(self, options=None):
         """
@@ -258,4 +198,4 @@ class Orchestrator(OrchestratorHTTP):
         endpoint = f"/Machines({machine_id})"
         url = f"{self.base_url}{endpoint}"
         machine = self._get(url)
-        return Machine(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, machine_id, machine["Key"], machine["Name"], access_token=self.access_token)
+        return Machine(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, int(machine_id), machine["Key"], machine["Name"], access_token=self.access_token)

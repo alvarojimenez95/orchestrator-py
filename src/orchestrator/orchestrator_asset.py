@@ -48,7 +48,7 @@ class Asset(OrchestratorHTTP):
         self.folder_id = folder_id
         self.access_token = access_token
         self.folder_name = folder_name
-        self.id = asset_id
+        self.id = int(asset_id)
         self.name = asset_name
         if session:
             self.session = session

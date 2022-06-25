@@ -81,11 +81,16 @@ class Job(OrchestratorHTTP):
         }
         return self._post(url, body=resume_body)
 
-    def get_logs(self, trace="Info"):
+    def get_logs(self, traces=["Info", "Error", "Warn", "Fatal"]):
         # need a Log Message class
         endpoint = "/RobotLogs"
+        fmt_traces = tuple(traces)
         query_param = urlencode({
-            "$filter": f"ProcessName eq '{self.name}' and Level eq '{trace}' and JobKey eq {self.key}",
+            "$filter": f"ProcessName eq '{self.name}' and Level in {fmt_traces} and JobKey eq {self.key}",
+            "$orderby": "TimeStamp desc"
+        })
+        pprint({
+            "$filter": f"ProcessName eq '{self.name}' and Level in {fmt_traces} and JobKey eq {self.key}",
             "$orderby": "TimeStamp desc"
         })
         url = f"{self.base_url}{endpoint}?{query_param}"

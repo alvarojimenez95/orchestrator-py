@@ -36,6 +36,9 @@ class Machine(OrchestratorHTTP):
         else:
             self.session = requests.Session()
 
+    def __str__(self):
+        return f"Machine Id: {self.id} \nMachine Name: {self.name}"
+
     def info(self):
         endpoint = f"/Machines({self.id})"
         url = f"{self.base_url}{endpoint}"

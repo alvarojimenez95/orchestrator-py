@@ -2,11 +2,12 @@ from orchestrator.orchestrator_http import OrchestratorHTTP
 from orchestrator.orchestrator_asset import Asset
 from orchestrator.orchestrator_queue import Queue
 from orchestrator.orchestrator_job import Job
+from orchestrator.orchestrator_process import Process
 from orchestrator.orchestrator_process_schedule import ProcessSchedule
 from orchestrator.exceptions import OrchestratorMissingParam
 from urllib.parse import urlencode
 import requests
-
+from pprint import pprint
 
 """
 Class to deal with calls and requests from a given Folder of an Orchestrator Cloud instance
@@ -113,7 +114,7 @@ class Folder(OrchestratorHTTP):
 
     def get_queue_by_id(self, queue_id):
         queues = self.get_queue_ids()
-        return Queue(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, queues[queue_id], queue_id=int(queue_id), access_token=self.access_token)
+        return Queue(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, queues[int(queue_id)], queue_id=int(queue_id), access_token=self.access_token)
 
     def get_assets(self, options=None):
         """
@@ -150,7 +151,7 @@ class Folder(OrchestratorHTTP):
 
     def get_asset_by_id(self, asset_id):
         assets = self.get_asset_ids()
-        return Asset(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, asset_id, assets[asset_id], access_token=self.access_token)
+        return Asset(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, int(asset_id), assets[int(asset_id)], access_token=self.access_token)
 
     def create_asset(self, body=None):
         pass
@@ -165,6 +166,15 @@ class Folder(OrchestratorHTTP):
         data = self._get(url)
         filt_data = data["value"]
         return [ProcessSchedule(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, process["Id"], process["Name"], access_token=self.access_token) for process in filt_data]
+
+    def get_schedule_by_id(self, id):
+        query_filter = urlencode({"$filter": f"Id eq {id}"})
+
+        endpoint = "/ProcessSchedules"
+        url = f"{self.base_url}{endpoint}?{query_filter}"
+        data = self._get(url)
+        filt_data = data["value"][0]
+        return ProcessSchedule(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, filt_data["Id"], filt_data["Name"], access_token=self.access_token)
 
     def get_schedule_ids(self, options=None):
         """
@@ -216,6 +226,7 @@ class Folder(OrchestratorHTTP):
             url = f"{self.base_url}{endpoint}?{enc_default}"
         data = self._get(url)["value"]
         # print(len(data))
+        # pprint(data)
         return [Job(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, job["Id"], job["Key"], job["ReleaseName"], access_token=self.access_token) for job in data]
 
     def get_job_keys(self, top="100", options=None):
@@ -243,3 +254,53 @@ class Folder(OrchestratorHTTP):
         else:
             url = f"{self.base_url}{endpoint}"
         return self._get(url)["value"]
+
+    def get_processes(self, options=None):
+        """
+        Gets all the processes of a given organization
+
+        @options: a dictionary of odata filtering options
+        ========
+        @returns: a list of Processes of the given organization
+        """
+        endpoint = "/Processes"
+        if options:
+            query_params = urlencode(options)
+            url = f"{self.base_url}{endpoint}?{query_params}"
+        else:
+            url = f"{self.base_url}{endpoint}"
+        processes = self._get(url)["value"]
+        return [Process(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, process["Id"], process["Title"], process["Version"], process["Key"], access_token=self.access_token) for process in processes]
+
+    def get_processes_keys(self, options=None):
+        """
+            Returns a dictionary with the processes keys
+
+            @options: dictionary of odata filtering options
+            ========
+            @returns: a dictionary where the keys are the process'
+            key and the values the process' title of the processes 
+            in the given organization
+        """
+        processes = self.get_processes(options=options)
+        ids = {}
+        for process in processes:
+            ids.update({process.key: process.title})
+        return ids
+
+    def get_process_by_key(self, process_key):
+        """
+        Returns a single process by is key
+
+        @process_key: the key of the process 
+        ============
+        @returns: a Process object with the specified process key 
+        """
+        query_param = urlencode({
+            "$filter": f"Key eq '{process_key}'"
+        })
+        endpoint = "/Processes"
+        url = f"{self.base_url}{endpoint}?{query_param}"
+        process = self._get(url)["value"][0]
+        return Process(self.client_id, self.refresh_token, self.tenant_name, self.folder_id,
+                       self.session, process["Id"], process["Title"], process["Version"], process["Key"], access_token=self.access_token)

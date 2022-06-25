@@ -131,3 +131,5 @@ dmypy.json
 dummy_credentials.json
 *.ipynb
 */tests
+
+.github

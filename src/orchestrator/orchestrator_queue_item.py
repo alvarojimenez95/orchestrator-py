@@ -1,23 +1,22 @@
-from pprint import pprint
 from orchestrator.orchestrator_http import OrchestratorHTTP
 from orchestrator.exceptions import OrchestratorMissingParam
 import requests
-from urllib.parse import urlencode
-import json
 
 __all__ = ["QueueItem"]
 
 
 class QueueItem(OrchestratorHTTP):
 
-    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, queue_name=None, queue_id=None, session=None, item_id=None, content=None, reference=None, access_token=None):
+    def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, queue_name=None, queue_id=None, session=None, item_id=None, content=None, reference=None, status=None, access_token=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id,
                          session=session)
         if not item_id:
             raise OrchestratorMissingParam(value="item id",
                                            message="Required parameter(s) missing: item_id")
         self.specific_content = content
+        self.client_id = client_id
         self.access_token = access_token
+        self.status = status
         self.reference = reference
         self.tenant_name = tenant_name
         self.folder_id = folder_id
@@ -34,10 +33,6 @@ class QueueItem(OrchestratorHTTP):
 
     def __str__(self):
         return f"Item Id: {self.id} \nQueue: {self.queue_name} \nFolder: {self.folder_name}"
-
-    def content(self):
-        info = self.info()
-        return info["SpecificContent"]
 
     def info(self):
         """

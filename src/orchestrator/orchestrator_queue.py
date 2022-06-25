@@ -1,3 +1,4 @@
+import datetime
 import logging
 from pprint import pprint
 from uuid import uuid4
@@ -34,6 +35,7 @@ class Queue(OrchestratorHTTP):
             raise OrchestratorMissingParam(value="queue_id",
                                            message="Required parameter(s) missing: queue_id")
         self.id = queue_id
+        self.client_id = client_id
         self.name = queue_name
         self.folder_name = folder_name
         self.folder_id = folder_id
@@ -130,7 +132,10 @@ class Queue(OrchestratorHTTP):
             ========
             @returns: an Item object with the specified item id
         """
-        return QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, self.session, item_id, access_token=self.access_token)
+        endpoint = f"/QueueItems({item_id})"
+        url = f"{self.base_url}{endpoint}"
+        data = self._get(url)
+        return QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, self.session, item_id, content=data["SpecificContent"], reference=data["Reference"], status=data["Status"], access_token=self.access_token)
 
     def get_queue_items(self, options=None):
         """
@@ -141,18 +146,59 @@ class Queue(OrchestratorHTTP):
             @returns: a list of QueueItem objects of the given queue (Maximum number of results: 1000)
         """
         endpoint = "/QueueItems"
+        odata_filter = {}
         if options and ("$filter" in options):
-            print(options["$filter"])
+            # print(options["$filter"])
             odata_filter = {"$filter": f"{options['$filter']} and QueueDefinitionId eq {self.id}"}
+        elif not options:
+            odata_filter = {}
         else:
-            odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and Status in ('Abandoned', 'Deleted') eq false"}
+            odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and Status in ('Failed', 'Retried', 'Successful')"}
+        # print(odata_filter)
+        if options is not None:
+            for k, v in options.items():
+                odata_filter.update({k: v})
+        # print(odata_filter)
 
         query_params = urlencode(odata_filter)
         url = f"{self.base_url}{endpoint}?{query_params}"
         data = self._get(url)
-        pprint(data)
+        # pprint(odata_filter)
+        # pprint(data)
+        # pprint(f"ODATA COUNT - -> {data['@odata.count']}")
         filt_data = data['value']
-        return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"], access_token=self.access_token) for item in filt_data]
+        if len(odata_filter) < 2:
+            return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"], status=item["Status"], access_token=self.access_token) for item in filt_data]
+        else:
+            return filt_data
+
+    def filter_by_reference(self, reference, num_days=2):
+        """
+        Returns a list of references of items which 
+        have status Failed, Retried or Successful from the past number of days
+
+        :param num_days - number of days to query the queue from (default: 2) 
+        """
+        tod = datetime.datetime.now()
+        filt_options = {
+            "$select": f"SpecificContent/{reference}, CreationTime, Status"
+        }
+        items = self.get_queue_items(options=filt_options)
+        try:
+            aux_list = [[i["SpecificContent"][reference], i["CreationTime"], i["Status"]] for i in items]
+            print(f"Length of aux_list: {len(aux_list)}")
+            for i, item in enumerate(aux_list):
+                creation_date = item[1]
+                try:
+                    diff = tod - datetime.timedelta(days=datetime.datetime.strptime(creation_date, '%Y-%m-%dT%H:%M:%S.%fZ').day)
+                except ValueError:
+                    diff = tod - datetime.timedelta(days=datetime.datetime.strptime(creation_date, '%Y-%m-%dT%H:%M:%SZ').day)
+
+                if diff.day > num_days:
+                    aux_list.pop(i)
+            return aux_list
+        except KeyError as err:
+            raise err
 
     def get_queue_items_by_status(self, status):
         """
@@ -165,7 +211,7 @@ class Queue(OrchestratorHTTP):
         url = f"{self.base_url}{endpoint}?{query_params}"
         data = self._get(url)
         filt_data = data['value']
-        return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"], access_token=self.access_token) for item in filt_data]
+        return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"], status=item["Status"], access_token=self.access_token) for item in filt_data]
 
     def _get_sp_contents(self, options=None):
         items = self.get_queue_items(options=options)
@@ -184,7 +230,9 @@ class Queue(OrchestratorHTTP):
     def check_duplicate(self, reference):
         """
         Given a queue reference, it checks whether a given queue
-        has already appeared in the queue once.
+        has already appeared in the queue once. It first gets the items 
+        of the queue which have status Succesful or Failed as a list of 
+
 
         Parameters:
 
@@ -213,9 +261,9 @@ class Queue(OrchestratorHTTP):
             ids of the given queue and the values the queue name
         """
         items = self.get_queue_items(options)
-        ids = {}
+        ids = []
         for item in items:
-            ids.update({item.id: item.queue_name})
+            ids.append({item.id: item.queue_name})
         return ids
 
     def add_queue_item(self, specific_content=None, priority="Low"):

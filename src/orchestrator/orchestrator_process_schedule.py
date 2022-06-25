@@ -11,6 +11,7 @@ class ProcessSchedule(OrchestratorHTTP):
         if not tenant_name or not folder_id:
             raise OrchestratorMissingParam(value="tenant_name, folder_id",
                                            message="Required parameter(s) missing: tenant_name, folder_id")
+        self.client_id = client_id
         self.tenant_name = tenant_name
         self.access_token = access_token
         self.id = process_id
@@ -33,7 +34,7 @@ class ProcessSchedule(OrchestratorHTTP):
 
     def schedule(self):
         info = self.info()
-        return info["StartProcessCronSummary"]
+        return info["StartProcessCron"]
 
     def delete(self):
         """

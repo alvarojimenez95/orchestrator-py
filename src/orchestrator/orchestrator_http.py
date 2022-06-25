@@ -3,7 +3,6 @@ import requests
 import random
 import json
 import string
-from pprint import pprint
 import logging
 
 from orchestrator.exceptions import OrchestratorAuthException, OrchestratorMissingParam
@@ -71,6 +70,7 @@ class OrchestratorHTTP(object):
         url = f"{self.account_url}{self.oauth_endpoint}"
         try:
             r = self.session.post(url=url, data=json.dumps(body), headers=headers)
+            print(r.url)
             token_data = r.json()
             token = token_data["access_token"]
             expiracy = token_data["expires_in"]

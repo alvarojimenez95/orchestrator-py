@@ -34,7 +34,7 @@ class Process(OrchestratorHTTP):
             "$filter": f"Key eq '{self.key}'"
         })
         url = f"{self.base_url}{endpoint}?{query_param}"
-        return self._get(url)["value"]
+        return self._get(url)["value"][0]
 
     def versions(self):
         endpoint = "/Processes"
@@ -45,14 +45,5 @@ class Process(OrchestratorHTTP):
     def parameters(self):
         endpoint = "/Processes"
         uipath_svc = f"/UiPath.Server.Configuration.OData.GetArguments(key='{self.key}')"
-        url = f"{self.base_url}{endpoint}{uipath_svc}"
-        return self._get(url)
-
-    def get_available_versions(self):
-        """
-        Gets all the available versions for a given process
-        """
-        endpoint = "/Processes"
-        uipath_svc = f"/UiPath.Server.Configuration.OData.GetProcessVersions(processId='{self.id}')"
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         return self._get(url)
