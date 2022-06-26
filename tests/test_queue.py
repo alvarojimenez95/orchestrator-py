@@ -48,8 +48,8 @@ def test_get_queue_items():
 
 def test_filter_by_reference():
     client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
-    queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127484)
-    items = queue.filter_by_reference(reference="integration_id")
+    queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129)
+    items = queue.filter_by_reference(reference="Name")
     for item in items:
         assert item[2] in {"Failed", "Retried", "Successful"}
 

@@ -115,5 +115,5 @@ def test_progress_update():
     item1.set_transaction_status(success=True)
 
     item2.set_transaction_status(success=False, reason="Failure Test", details="BRE0 - Missing parameters", exception_type="BusinessException")
-    item1.delete()
-    item2.delete()
+    # item1.delete()
+    # item2.delete()

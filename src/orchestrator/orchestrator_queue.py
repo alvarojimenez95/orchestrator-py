@@ -191,16 +191,21 @@ class Queue(OrchestratorHTTP):
         items = self.get_queue_items(options=filt_options)
         try:
             aux_list = [[i["SpecificContent"][reference], i["CreationTime"], i["Status"]] for i in items]
-            print(f"Length of aux_list: {len(aux_list)}")
+            logging.info(f"Length of aux_list: {len(aux_list)}")
+            # print(aux_list)
+            INDEXES = []
             for i, item in enumerate(aux_list):
                 creation_date = item[1]
                 try:
                     diff = tod - datetime.timedelta(days=datetime.datetime.strptime(creation_date, '%Y-%m-%dT%H:%M:%S.%fZ').day)
                 except ValueError:
                     diff = tod - datetime.timedelta(days=datetime.datetime.strptime(creation_date, '%Y-%m-%dT%H:%M:%SZ').day)
-
-                if diff.day > num_days:
-                    aux_list.pop(i)
+                if diff.day > num_days and diff.day != 31:
+                    INDEXES.append(i)
+            if INDEXES:
+                for index in sorted(INDEXES, reverse=True):
+                    del aux_list[index]
+            logging.info(f"There is a total of {len(aux_list)} items")
             return aux_list
         except KeyError as err:
             raise err
@@ -248,7 +253,7 @@ class Queue(OrchestratorHTTP):
             item whose reference matches the one indicated as an argument. Otherwise it returns
             False.
         """
-        filt_items = self.get_queue_items(options={"$filter": f"contains(Reference, '{reference}') and Status eq 'Successful'"})
+        filt_items = self.get_queue_items(options={"$filter": f"contains(Reference, '{reference}') and Status in ('Successful', 'Failed')"})
 
         if len(filt_items) > 0:
             return filt_items[0]
