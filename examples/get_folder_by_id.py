@@ -16,10 +16,8 @@ def main():
         tenant_name=TENANT_NAME
     )
 
-    assets = client.get_folder_by_id(PRE_FOLDER_ID).get_assets()
-    for asset in assets:
-        print(f"--------- ASSET: {asset.name}---------")
-        print(asset)
+    queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129)
+    print(queue)
 
 
 if __name__ == "__main__":
