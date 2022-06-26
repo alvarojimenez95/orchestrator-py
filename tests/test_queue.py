@@ -94,3 +94,41 @@ def test_get_queue_item_by_id():
     assert item_atr["queue_name"]
     assert item_atr["queue_id"]
     assert item_atr["id"]
+    print(item)
+
+
+def test_add_queue_item():
+    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129)
+    sp_content = {
+        "Name": "Alvaro",
+        "Surname": "Jimenez"
+    }
+    item = queue.add_queue_item(specific_content=sp_content)
+    assert item.id
+    assert item.client_id
+    assert item.refresh_token
+    assert item.tenant_name
+    assert item.status
+    assert item.reference
+    assert item.folder_id == int(PRE_FOLDER_ID)
+    assert item.folder_name
+    assert item.queue_name
+    assert item.queue_id == 127129
+
+
+def test_bulk_add_queue_items():
+    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129)
+    sp_content1 = {
+        "Name": "Alvaro",
+        "Surname": "Jimenez"
+    }
+    sp_content2 = {
+        "Name": "John",
+        "Surname": "Doe"
+    }
+    data_ref = queue.bulk_create_items(specific_contents=[sp_content1, sp_content2], reference="Name")
+    data = queue.bulk_create_items(specific_contents=[sp_content1, sp_content2])
+    assert data_ref["Success"]
+    assert data["Success"]

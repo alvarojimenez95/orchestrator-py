@@ -39,13 +39,13 @@ class Orchestrator(OrchestratorHTTP):
 
     ):
 
-        super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session, file=file)
         # if not client_id or not refresh_token:
         #     raise OrchestratorAuthException(
         #         value=None, message="client id and refresh token cannot be left empty"
         #     )
         # else:
         #     self.client_id = client_id
+        super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session, file=file)
         if file:
             self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
 
@@ -55,6 +55,10 @@ class Orchestrator(OrchestratorHTTP):
                 self.client_id = data["client_id"]
                 self.refresh_token = data["refresh_token"]
                 self.tenant_name = data["tenant_name"]
+                if "folder_id" in data:
+                    self.folder_id = data["folder_id"]
+                else:
+                    self.folder_id = None
             except KeyError:
                 raise
         else:

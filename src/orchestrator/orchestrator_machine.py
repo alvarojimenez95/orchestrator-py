@@ -22,8 +22,8 @@ class Machine(OrchestratorHTTP):
     def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, session=None, machine_id=None, machine_key=None, machine_name=None, access_token=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
         if not machine_id:
-            raise OrchestratorMissingParam(value="queue_id",
-                                           message="Required parameter(s) missing: queue_id")
+            raise OrchestratorMissingParam(value="machine id",
+                                           message="Required parameter(s) missing: machine_id")
         self.id = machine_id
         self.access_token = access_token
         self.name = machine_name

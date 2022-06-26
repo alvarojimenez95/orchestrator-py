@@ -26,7 +26,7 @@ class OrchestratorHTTP(object):
         file=None
 
     ):
-        if not client_id or not refresh_token:
+        if not client_id or not refresh_token or not tenant_name:
             if file:
                 f = open(file)
                 try:
@@ -35,13 +35,13 @@ class OrchestratorHTTP(object):
                     self.refresh_token = data["refresh_token"]
                     self.tenant_name = data["tenant_name"]
                     self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
-                    self.folder_id = data["folder_id"]
+                    # self.folder_id = data["folder_id"]
                 except KeyError as err:
                     print(err)
                     raise
             else:
                 raise OrchestratorAuthException(
-                    value=None, message="client id and refresh token cannot be left empty"
+                    value=None, message="client id and/or refresh token and/or tenant name cannot be left empty"
                 )
 
         else:
@@ -100,7 +100,7 @@ class OrchestratorHTTP(object):
 
         headers = self._auth_header()
         # pprint(headers)
-        if method == "POST":
+        if method in {"POST"}:
             headers.update(self._content_header())
         if self.folder_id:
             headers.update(self._folder_header())
@@ -114,7 +114,7 @@ class OrchestratorHTTP(object):
                 r = self.session.request(method, endpoint, json=item_data, headers=headers)
             else:
                 r = self.session.request(method, endpoint, headers=headers)
-                # print(r.status_code)
+                # print(r.json())
                 if r.status_code == 401:
                     self._get_token()
                     headers = self._auth_header()
@@ -147,4 +147,4 @@ class OrchestratorHTTP(object):
         return self._internal_call("PUT", url, args, body=kwargs)
 
     def _delete(self, url, *args, **kwargs):
-        return self._internal_call("DELETE", url, args, kwargs)
+        return self._internal_call("DELETE", url, args)

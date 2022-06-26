@@ -39,3 +39,4 @@ def test_asset_info():
     assert asset_atr["access_token"]
     assert asset_atr["id"]
     assert asset_atr["name"]
+    print(asset)

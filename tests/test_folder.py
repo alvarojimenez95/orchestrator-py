@@ -42,8 +42,6 @@ def test_folder_processes():
         assert process_atr["version"]
         assert process_atr["title"]
         assert process_atr["key"]
-    info = processes[0].info()
-    pprint(info)
 
 
 def test_folder_process_keys():
@@ -66,6 +64,7 @@ def test_folder_processes_by_key():
     assert process_atr["version"]
     assert process_atr["title"]
     assert process_atr["key"]
+    print(process)
 
 
 def test_folder_queues():
@@ -123,6 +122,7 @@ def test_folder_queue_by_id():
     assert queue_atr["folder_name"]
     assert queue_atr["folder_id"]
     assert queue_atr["folder_name"]
+    print(queue)
 
 
 def test_folder_assets():
@@ -190,6 +190,7 @@ def test_folder_process_schedule_by_id():
     assert proc_schedule.id == 70790
     assert proc_schedule.name
     assert proc_schedule.folder_id == int(PROD_FOLDER_ID)
+    print(proc_schedule)
 
 
 def test_folder_jobs():
@@ -219,3 +220,4 @@ def test_folder_job_by_key():
     assert job_atr["folder_name"]
     assert job_atr["id"]
     assert job_atr["key"]
+    print(job)

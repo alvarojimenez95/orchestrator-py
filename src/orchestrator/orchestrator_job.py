@@ -9,7 +9,7 @@ from orchestrator.orchestrator_logs import Log
 class Job(OrchestratorHTTP):
     def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, session=None, job_id=None, job_key=None, job_name=None, access_token=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
-        if not job_key:
+        if not job_key or not job_id:
             raise OrchestratorMissingParam(value="asset_id",
                                            message="Required parameter(s) missing: asset_id")
         self.tenant_name = tenant_name

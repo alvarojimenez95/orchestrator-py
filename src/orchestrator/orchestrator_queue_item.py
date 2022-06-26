@@ -22,6 +22,7 @@ class QueueItem(OrchestratorHTTP):
         self.folder_id = folder_id
         self.folder_name = folder_name
         self.queue_name = queue_name
+        self.refresh_token = refresh_token
         self.queue_id = queue_id
         self.id = item_id
 
@@ -60,6 +61,8 @@ class QueueItem(OrchestratorHTTP):
     def edit(self, body=None):
         """
             edits the given queue item
+            Body needs to containe the queue name 
+            as well
         """
         endpoint = f"/QueueItems({self.id})"
         url = f"{self.base_url}{endpoint}"

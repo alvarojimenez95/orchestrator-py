@@ -89,6 +89,7 @@ def test_libreries():
         assert lib_atr["key"]
         assert lib_atr["name"]
         assert lib_atr["session"]
+        print(lib)
 
 
 def test_machines():
@@ -118,6 +119,7 @@ def test_machine_by_id():
     assert machine_atr["name"]
     assert machine_atr["key"]
     assert machine_atr["tenant_name"]
+    print(machine)
 
 
 def test_permissions():
@@ -125,4 +127,8 @@ def test_permissions():
     client.permissions()
 
 
-test_permissions()
+def test_orchestrator_auth_from_file():
+    client = Orchestrator(file="/Users/alvaro/Dev/python/orchestrator-py/tests/dummy_creds.json")
+
+
+test_orchestrator_auth_from_file()

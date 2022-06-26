@@ -4,6 +4,7 @@ import os
 from pprint import pprint
 import pytest
 
+
 LOCAL_TEST = True
 
 if LOCAL_TEST:
@@ -16,6 +17,7 @@ if LOCAL_TEST:
     ITEM_ID = os.getenv('ITEM_ID')
     PRE_FOLDER_ID = os.getenv('PRE_FOLDER_ID')
     PROD_FOLDER_ID = os.getenv('PROD_FOLDER_ID')
+    MACHINE_IDENTIFIER = os.getenv('MACHINE_IDENTIFIER')
 else:
     load_dotenv()
     CLIENT_ID = os.environ['CLIENT_ID']
@@ -45,3 +47,73 @@ def test_queue_item_info():
     assert item_atr["queue_name"]
     assert item_atr["queue_id"]
     assert item_atr["id"]
+
+
+def test_item_last_entry():
+    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    item = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129).get_item_by_id(278271841)
+    data = item.last_entry()
+    assert data
+
+
+def test_delete_queue_item():
+    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129)
+    sp_content = {
+        "Name": "Alvaro",
+        "Surname": "Jimenez"
+    }
+    item = queue.add_queue_item(specific_content=sp_content)
+    assert item.id
+    assert item.folder_id == int(PRE_FOLDER_ID)
+    assert item.folder_name
+    assert item.queue_id
+    assert item.queue_name
+    assert item.tenant_name
+    assert item.client_id
+    assert item.status
+    item.delete()
+
+
+def test_edit_queue_item():
+    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129)
+    sp_content = {
+        "Name": "Alvaro",
+        "Surname": "Jimenez"
+    }
+    item = queue.add_queue_item(specific_content=sp_content)
+    assert item.id
+    assert item.folder_id == int(PRE_FOLDER_ID)
+    assert item.folder_name
+    assert item.queue_id
+    assert item.queue_name
+    assert item.tenant_name
+    assert item.client_id
+    assert item.status
+    body = {
+        "Name": item.queue_name,
+        "SpecificContent": {
+            "Nombre": "Alvaro",
+            "Apelllido": "Doe"
+        }
+    }
+    item.edit(body=body)
+
+
+def test_progress_update():
+    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129)
+    sp_content = {
+        "Name": "Alvaro",
+        "Surname": "Jimenez"
+    }
+    item1 = queue.start(machine_identifier=MACHINE_IDENTIFIER, specific_content=sp_content)
+    item2 = queue.start(machine_identifier=MACHINE_IDENTIFIER, specific_content=sp_content, references=["Name"])
+
+    item1.set_transaction_progress(status="This is a test for endpoint SetTransactionProgress")
+    item1.set_transaction_status(success=True)
+
+    item2.set_transaction_status(success=False, reason="Failure Test", details="BRE0 - Missing parameters", exception_type="BusinessException")
+    item1.delete()
+    item2.delete()

@@ -83,6 +83,10 @@ class Queue(OrchestratorHTTP):
                 "SpecificContent": specific_content,
             }
         }
+        if not references:
+            format_body_start["transactionData"]["SpecificContent"]["ReferenceID"] = ran_uuid
+            format_body_start["transactionData"]["SpecificContent"]["BatchID"] = batch_id
+            format_body_start["transactionData"]["Reference"] = batch_id
         if references:
             try:
                 ref = ""
@@ -101,7 +105,8 @@ class Queue(OrchestratorHTTP):
             format_body_start["transactionData"]["SpecificContent"].update(fields)
 
         url = f"{self.base_url}{endpoint}"
-        return self._post(url, body=format_body_start)
+        data = self._post(url, body=format_body_start)
+        return QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, self.session, data["Id"], data["SpecificContent"], data["Reference"], data["Status"], self.access_token)
 
     def get_processing_records(self, num_days=1, options=None):
         """
@@ -266,7 +271,7 @@ class Queue(OrchestratorHTTP):
             ids.append({item.id: item.queue_name})
         return ids
 
-    def add_queue_item(self, specific_content=None, priority="Low"):
+    def add_queue_item(self, specific_content=None, priority="Low", reference=None):
         """Creates a new Item
 
             @specific_content: dictionary of key value pairs (it does not
@@ -279,17 +284,26 @@ class Queue(OrchestratorHTTP):
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         if not specific_content:
             raise OrchestratorMissingParam(value="specific_content", message="specific content cannot be null")
+        if reference:
+            try:
+                ref = specific_content[reference]
+                ref_uuid = f"{ref}#{str(uuid4())}"
+            except KeyError:
+                raise Exception(f"Key {reference} not found")
+        else:
+            ref_uuid = str(uuid4())
         format_body_queue = {
             "itemData": {
                 "Priority": priority,
                 "Name": self.name,
                 "SpecificContent": specific_content,
-                "Reference": self.generate_reference(),
+                "Reference": ref_uuid,
                 # "Progress": "In Progres"
             }
         }
         # pprint(format_body_queue)
-        return self._post(url, body=format_body_queue)
+        data = self._post(url, body=format_body_queue)
+        return QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, self.session, data["Id"], data["SpecificContent"], data["Reference"], data["Status"], access_token=self.access_token)
 
     def _format_specific_content(self, sp_content, reference=None, priority="Low", progress="New", batch_id=None):
         ran_uuid = str(uuid4())
@@ -365,7 +379,6 @@ class Queue(OrchestratorHTTP):
         """
         endpoint = "/Queues"
         uipath_svc = "/UiPathODataSvc.BulkAddQueueItems"
-        print(type(specific_contents[0]))
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         if not specific_contents:
             raise OrchestratorMissingParam(value="specific_contents", message="specific contents cannot be null")
@@ -379,7 +392,7 @@ class Queue(OrchestratorHTTP):
         # pprint(format_body_queue)
         return self._post(url, body=format_body_queue)
 
-    def edit_queue(self, name=None, description=None):
+    def edit_queue(self, name, description=None):
         """Edits the queue with a new name and a new
         descriptions
 
@@ -387,14 +400,15 @@ class Queue(OrchestratorHTTP):
         @description: the new description of the queue
 
         """
-        if not name or not description:
-            raise OrchestratorMissingParam(value="name/description", message="name and/or description cannot be null")
+        if not description:
+            raise OrchestratorMissingParam(value="description", message="description cannot be null")
         endpoint = f"/QueueDefinitions({self.id})"
         url = f"{self.base_url}{endpoint}"
         format_body_queue = {
             "Name": name,
             "Description": description
         }
+        pprint(format_body_queue)
         return self._put(url, body=format_body_queue)
 
     def delete_queue(self):
