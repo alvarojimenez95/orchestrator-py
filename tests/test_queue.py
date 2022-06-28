@@ -49,8 +49,8 @@ def test_get_queue_items():
 def test_filter_by_reference():
     client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PROD_FOLDER_ID).get_queue_by_id(127136)
-    items = queue.filter_by_reference(reference="integration_id", num_days=2)
-    print(len(items))
+    items = queue.filter_by_reference(reference="integration_id", num_days=5)
+    # print(len(items))
     for item in items:
         assert item[2] in {"Failed", "Retried", "Successful"}
 

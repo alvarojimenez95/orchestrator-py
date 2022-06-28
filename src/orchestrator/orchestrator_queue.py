@@ -169,25 +169,30 @@ class Queue(OrchestratorHTTP):
         url = f"{self.base_url}{endpoint}?{query_params}"
         data = self._get(url)
         odata_count = data["@odata.count"]
+        # print(f"@odata.count is {odata_count}")
+        logging.debug(f"@odata.count is {odata_count}")
         values = data["value"]
         count = len(values)
         skip = 0
         # if odata_count is higher, paginate through the items
+        i = 1
         while count < odata_count:
             logging.info("OData count is higher than the supported maximum number of items. Starting pagination")
             if options is not None:
                 for k, v in options.items():
                     odata_filter.update({k: v})
             # skip formula
-            skip += min(1000, skip + (odata_count - count))
+            # print("Skip "+str(skip))
+            skip += 1000
             odata_filter.update({"$skip": skip})
             query_params = urlencode(odata_filter)
             url = f"{self.base_url}{endpoint}?{query_params}"
             aux_data = self._get(url)["value"]
             values += aux_data
             count = len(values)
-
+            i += 1
         logging.info(f"Length of the requested list of items is: {len(values)}")
+
         # filt_data = data['value']
         if len(odata_filter) < 2:
             return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"], status=item["Status"], access_token=self.access_token) for item in values]
@@ -210,13 +215,13 @@ class Queue(OrchestratorHTTP):
         try:
             aux_list = [[i["SpecificContent"][reference], i["CreationTime"], i["Status"]] for i in items]
             logging.info(f"Length of aux_list: {len(aux_list)}")
-            print(len(aux_list))
             INDEXES = []
             for i, item in enumerate(aux_list):
                 creation_date = item[1]
                 try:
                     diff = tod - datetime.timedelta(days=datetime.datetime.strptime(creation_date, '%Y-%m-%dT%H:%M:%S.%fZ').day)
                 except ValueError:
+                    # raise
                     diff = tod - datetime.timedelta(days=datetime.datetime.strptime(creation_date, '%Y-%m-%dT%H:%M:%SZ').day)
                 if diff.day > num_days and diff.day != 31:
                     INDEXES.append(i)
