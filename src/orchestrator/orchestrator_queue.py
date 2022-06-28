@@ -168,14 +168,31 @@ class Queue(OrchestratorHTTP):
         query_params = urlencode(odata_filter)
         url = f"{self.base_url}{endpoint}?{query_params}"
         data = self._get(url)
-        # pprint(odata_filter)
-        # pprint(data)
-        # pprint(f"ODATA COUNT - -> {data['@odata.count']}")
-        filt_data = data['value']
+        odata_count = data["@odata.count"]
+        values = data["value"]
+        count = len(values)
+        skip = 0
+        # if odata_count is higher, paginate through the items
+        while count < odata_count:
+            logging.info("OData count is higher than the supported maximum number of items. Starting pagination")
+            if options is not None:
+                for k, v in options.items():
+                    odata_filter.update({k: v})
+            # skip formula
+            skip += min(1000, skip + (odata_count - count))
+            odata_filter.update({"$skip": skip})
+            query_params = urlencode(odata_filter)
+            url = f"{self.base_url}{endpoint}?{query_params}"
+            aux_data = self._get(url)["value"]
+            values += aux_data
+            count = len(values)
+
+        logging.info(f"Length of the requested list of items is: {len(values)}")
+        # filt_data = data['value']
         if len(odata_filter) < 2:
-            return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"], status=item["Status"], access_token=self.access_token) for item in filt_data]
+            return [QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, session=self.session, item_id=item["Id"], content=item["SpecificContent"], reference=item["Reference"], status=item["Status"], access_token=self.access_token) for item in values]
         else:
-            return filt_data
+            return values
 
     def filter_by_reference(self, reference, num_days=2):
         """
@@ -188,11 +205,12 @@ class Queue(OrchestratorHTTP):
         filt_options = {
             "$select": f"SpecificContent/{reference}, CreationTime, Status"
         }
+
         items = self.get_queue_items(options=filt_options)
         try:
             aux_list = [[i["SpecificContent"][reference], i["CreationTime"], i["Status"]] for i in items]
             logging.info(f"Length of aux_list: {len(aux_list)}")
-            # print(aux_list)
+            print(len(aux_list))
             INDEXES = []
             for i, item in enumerate(aux_list):
                 creation_date = item[1]

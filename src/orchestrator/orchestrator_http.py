@@ -1,4 +1,5 @@
 from datetime import datetime
+from pprint import pprint
 import requests
 import random
 import json
@@ -137,7 +138,8 @@ class OrchestratorHTTP(object):
 
     def _get(self, url, *args, **kwargs):
 
-        return self._internal_call("GET", url, args, kwargs)
+        data = self._internal_call("GET", url, args, kwargs)
+        return data
 
     def _post(self, url, *args, **kwargs):
         # pprint(kwargs)
