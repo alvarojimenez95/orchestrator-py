@@ -158,7 +158,7 @@ class Queue(OrchestratorHTTP):
         elif not options:
             odata_filter = {}
         else:
-            odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and Status in ('Failed', 'Retried', 'Successful')"}
+            odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and Status in ('New', 'Abandoned', 'Retried', 'Successful')"}
         # print(odata_filter)
         if options is not None:
             for k, v in options.items():
