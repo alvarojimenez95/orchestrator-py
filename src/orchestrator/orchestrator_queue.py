@@ -276,7 +276,8 @@ class Queue(OrchestratorHTTP):
             item whose reference matches the one indicated as an argument. Otherwise it returns
             False.
         """
-        filt_items = self.get_queue_items(options={"$filter": f"contains(Reference, '{reference}') and Status in ('Successful', 'Failed')"})
+        filt_items = self.get_queue_items(
+            options={"$filter": f"contains(Reference, '{reference}') and Status in ('Successful', 'New', 'Retried', 'Abandoned')"})
 
         if len(filt_items) > 0:
             return filt_items[0]
