@@ -1,3 +1,4 @@
+from uuid import uuid4
 from orchestrator.orchestrator import Orchestrator
 from dotenv import load_dotenv
 import os
@@ -11,6 +12,8 @@ if LOCAL_TEST:
     load_dotenv()
     CLIENT_ID = os.getenv('CLIENT_ID')
     REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')
+    REFRESH_TOKEN_BOTS_OPS = os.getenv('REFRESH_TOKEN_BOTS_OPS')
+
     TENANT_NAME = os.getenv('TENANT_NAME')
     FOLDER_ID = os.getenv('FOLDER_ID')
     QUEUE_ID = os.getenv('QUEUE_ID')
@@ -31,8 +34,10 @@ else:
 
 
 def test_queue_item_info():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
-    item = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127484).get_item_by_id(276927010)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    item = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(
+        127484).get_item_by_id(276927010)
     item.info()
     item.history()
     item_atr = item.__dict__
@@ -50,14 +55,17 @@ def test_queue_item_info():
 
 
 def test_item_last_entry():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
-    item = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129).get_item_by_id(278271841)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    item = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(
+        127129).get_item_by_id(278271841)
     data = item.last_entry()
     assert data
 
 
 def test_delete_queue_item():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129)
     sp_content = {
         "Name": "Alvaro",
@@ -76,7 +84,8 @@ def test_delete_queue_item():
 
 
 def test_edit_queue_item():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129)
     sp_content = {
         "Name": "Alvaro",
@@ -102,18 +111,26 @@ def test_edit_queue_item():
 
 
 def test_progress_update():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
-    queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129)
+    client = Orchestrator(
+        client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN_BOTS_OPS, tenant_name=TENANT_NAME)
+    queue = client.get_folder_by_id(
+        int(PROD_FOLDER_ID)).get_queue_by_id(136663)
     sp_content = {
         "Name": "Alvaro",
         "Surname": "Jimenez"
     }
-    item1 = queue.start(machine_identifier=MACHINE_IDENTIFIER, specific_content=sp_content)
-    item2 = queue.start(machine_identifier=MACHINE_IDENTIFIER, specific_content=sp_content, references=["Name"])
+    str_uuid = str(uuid4())
+    print(str_uuid)
+    item1 = queue.start(machine_identifier=MACHINE_IDENTIFIER,
+                        specific_content=sp_content, fields={"BatchID": str_uuid})
+    item2 = queue.start(machine_identifier=MACHINE_IDENTIFIER, specific_content=sp_content, references=[
+                        "Name"], fields={"BatchID": str_uuid})
 
-    item1.set_transaction_progress(status="This is a test for endpoint SetTransactionProgress")
+    item1.set_transaction_progress(
+        status="This is a test for endpoint SetTransactionProgress")
     item1.set_transaction_status(success=True)
 
-    item2.set_transaction_status(success=False, reason="Failure Test", details="BRE0 - Missing parameters", exception_type="BusinessException")
+    item2.set_transaction_status(success=False, reason="Failure Test",
+                                 details="BRE0 - Missing parameters", exception_type="BusinessException")
     # item1.delete()
     # item2.delete()

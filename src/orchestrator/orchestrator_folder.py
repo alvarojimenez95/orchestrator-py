@@ -4,7 +4,13 @@ from orchestrator.orchestrator_queue import Queue
 from orchestrator.orchestrator_job import Job
 from orchestrator.orchestrator_process import Process
 from orchestrator.orchestrator_process_schedule import ProcessSchedule
-from orchestrator.exceptions import OrchestratorMissingParam
+from orchestrator.exceptions import (
+    OrchestratorMissingParameters,
+    OrchestratorQueueNotFound,
+    OrchestratorAssetNotFound,
+    OrchestratorJobNotFound,
+    OrchestratorProcessNotFound,
+    OrchestratorProcessScheduleNotFound)
 from urllib.parse import urlencode
 import requests
 from pprint import pprint
@@ -38,10 +44,12 @@ class Folder(OrchestratorHTTP):
     """
 
     def __init__(self, client_id, refresh_token, tenant_name, session=None, folder_name=None,  folder_id=None, access_token=None):
-        super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
+        super().__init__(client_id=client_id, refresh_token=refresh_token,
+                         tenant_name=tenant_name, folder_id=folder_id, session=session)
         if not tenant_name or not folder_id:
-            raise OrchestratorMissingParam(value="tenant_name",
-                                           message="Required parameter missing: tenant_name")
+            raise OrchestratorMissingParameters(
+                message="Required parameter missing: tenant_name",
+                error_message="Required parameter missing: tenant_name")
         self.id = folder_id
         self.access_token = access_token
         self.refresh_token = refresh_token
@@ -113,8 +121,13 @@ class Folder(OrchestratorHTTP):
         return data['value']
 
     def get_queue_by_id(self, queue_id):
+        """Returns a single queue by its id"""
         queues = self.get_queue_ids()
-        return Queue(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, queues[int(queue_id)], queue_id=int(queue_id), access_token=self.access_token)
+        try:
+            return Queue(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, queues[int(queue_id)], queue_id=int(queue_id), access_token=self.access_token)
+        except KeyError:
+            raise OrchestratorQueueNotFound(message=f"Queue {queue_id} not found",
+                                            error_message=f"Queue {queue_id} does not appear to exist in the current folder.")
 
     def get_assets(self, options=None):
         """
@@ -128,8 +141,6 @@ class Folder(OrchestratorHTTP):
         else:
             url = f"{self.base_url}{endpoint}"
         data = self._get(url)
-        # pprint(data)
-        # pprint(self.id)
         filt_data = data['value']
         return [Asset(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, asset["Id"], asset["Name"], access_token=self.access_token) for asset in filt_data]
 
@@ -150,13 +161,31 @@ class Folder(OrchestratorHTTP):
         return ids
 
     def get_asset_by_id(self, asset_id):
+        """
+            Gets a single asset by its id 
+
+            Parameters: 
+
+            :param asset_id - the id of the asset
+        """
         assets = self.get_asset_ids()
-        return Asset(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, int(asset_id), assets[int(asset_id)], access_token=self.access_token)
+        try:
+            return Asset(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, int(asset_id), assets[int(asset_id)], access_token=self.access_token)
+        except KeyError:
+            raise OrchestratorAssetNotFound(message=f"Queue {asset_id} not found",
+                                            error_message=f"Queue {asset_id} does not appear to exist in the current folder.")
 
     def create_asset(self, body=None):
         pass
 
     def get_process_schedules(self, options=None):
+        """
+            Returns a list of the process schedules in the current 
+            folder 
+
+            Parameters: 
+            :param options - a dictionary of odata query parameters
+        """
         endpoint = "/ProcessSchedules"
         if options:
             query_params = urlencode(options)
@@ -168,12 +197,23 @@ class Folder(OrchestratorHTTP):
         return [ProcessSchedule(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, process["Id"], process["Name"], access_token=self.access_token) for process in filt_data]
 
     def get_schedule_by_id(self, id):
+        """
+            Returns a single process schedule by its id 
+
+            Parameters:
+
+            :param id - the id of the process schedule
+        """
         query_filter = urlencode({"$filter": f"Id eq {id}"})
 
         endpoint = "/ProcessSchedules"
         url = f"{self.base_url}{endpoint}?{query_filter}"
         data = self._get(url)
-        filt_data = data["value"][0]
+        try:
+            filt_data = data["value"][0]
+        except KeyError:
+            raise OrchestratorProcessScheduleNotFound(
+                message="Process schedule not found", error_message=f"Process with id {id} does not appear to exist.")
         return ProcessSchedule(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.session, filt_data["Id"], filt_data["Name"], access_token=self.access_token)
 
     def get_schedule_ids(self, options=None):
@@ -199,21 +239,12 @@ class Folder(OrchestratorHTTP):
             url = f"{self.base_url}{endpoint}"
         return self._get(url)["value"]
 
-    def get_machine_runtime_sessions(self):
-        """
-            No se por que no va
-        """
-        endpoint = "/Sessions"
-        uipath_svc = "UiPath.Server.Configuration.OData.GetMachineSessionRuntimesByFolderId(folderId={self.id})"
-        url = f"{self.base_url}{endpoint}{uipath_svc}"
-        return self._get(url)
-
     def get_jobs(self, top="100", options=None):
         """
         Returns the jobs of a given folder
 
-        @top : maximum number of results (100 default)
-        @options: dictionary of odata filtering options
+        :param top : maximum number of results (100 default)
+        :param options: dictionary of odata filtering options
         """
         endpoint = "/Jobs"
         default = {"$orderby": "StartTime desc", "$top": f"{top}"}
@@ -225,8 +256,6 @@ class Folder(OrchestratorHTTP):
         else:
             url = f"{self.base_url}{endpoint}?{enc_default}"
         data = self._get(url)["value"]
-        # print(len(data))
-        # pprint(data)
         return [Job(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, job["Id"], job["Key"], job["ReleaseName"], access_token=self.access_token) for job in data]
 
     def get_job_keys(self, top="100", options=None):
@@ -243,7 +272,11 @@ class Folder(OrchestratorHTTP):
         endpoint = "/Jobs"
         query_param = urlencode({"$filter": f"Key eq {key}"})
         url = f"{self.base_url}{endpoint}?{query_param}"
-        data = self._get(url)["value"][0]
+        try:
+            data = self._get(url)["value"][0]
+        except IndexError:
+            raise OrchestratorJobNotFound(
+                message="Job not found", error_message=f"Job with key {key} does not appear to exist in the current folder.")
         return Job(self.client_id, self.refresh_token, self.tenant_name, self.id, self.name, self.session, data["Id"], data["Key"], data["ReleaseName"], access_token=self.access_token)
 
     def job_triggers(self, options=None):
@@ -301,6 +334,10 @@ class Folder(OrchestratorHTTP):
         })
         endpoint = "/Processes"
         url = f"{self.base_url}{endpoint}?{query_param}"
-        process = self._get(url)["value"][0]
+        try:
+            process = self._get(url)["value"][0]
+        except IndexError:
+            raise OrchestratorProcessNotFound(message="Process not found.",
+                                              error_message=f"Process with key {process_key} does not appear to exist in the current folder.")
         return Process(self.client_id, self.refresh_token, self.tenant_name, self.folder_id,
                        self.session, process["Id"], process["Title"], process["Version"], process["Key"], access_token=self.access_token)

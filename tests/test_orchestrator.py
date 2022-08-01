@@ -8,8 +8,11 @@ LOCAL_TEST = True
 
 if LOCAL_TEST:
     load_dotenv()
+    DUMMY_TOKEN = os.getenv('DUMMY_TOKEN')
     CLIENT_ID = os.getenv('CLIENT_ID')
     REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')
+    REFRESH_TOKEN_BOTS_OPS = os.getenv('REFRESH_TOKEN_BOTS_OPS')
+
     TENANT_NAME = os.getenv('TENANT_NAME')
     FOLDER_ID = os.getenv('FOLDER_ID')
     QUEUE_ID = os.getenv('QUEUE_ID')
@@ -28,8 +31,24 @@ else:
     PROD_FOLDER_ID = os.environ['PROD_FOLDER_ID']
 
 
+def test_orchestrator_wrong_parameters():
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    folder = client.get_folder_by_id(PRE_FOLDER_ID)
+    data = {
+        "$filter": "Name eq 'BOT_048_FR_AnaelIntegration'"
+    }
+    queue = folder.get_queues(options=data)
+    print(queue)
+    # queue = folder.get_queue_by_id
+
+
+test_orchestrator_wrong_parameters()
+
+
 def test_orchestrator_folder():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     folder = client.get_folder_by_id(PRE_FOLDER_ID)
     folder_atr = folder.__dict__
     assert folder_atr["client_id"]
@@ -41,7 +60,8 @@ def test_orchestrator_folder():
 
 
 def test_orchestrator_folders():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     folders = client.get_folders()
     for folder in folders:
         folder_atr = folder.__dict__
@@ -54,13 +74,15 @@ def test_orchestrator_folders():
 
 
 def test_orchestrator_folder_ids():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     folder_ids = client.get_folder_ids()
     assert folder_ids
 
 
 def test_orchestrator_folder_by_name():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     folder = client.get_folder_by_name("Pre-produccion")
     folder_atr = folder.__dict__
     assert folder_atr["client_id"]
@@ -73,12 +95,14 @@ def test_orchestrator_folder_by_name():
 
 @pytest.mark.xfail(raises=Exception)
 def test_xfail_folder_name():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     client.get_folder_by_name("Pre-production")
 
 
 def test_libreries():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     libraries = client.get_libraries()
     for lib in libraries:
         lib_atr = lib.__dict__
@@ -93,7 +117,8 @@ def test_libreries():
 
 
 def test_machines():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     machines = client.get_machines()
     for m in machines:
         machine_atr = m.__dict__
@@ -107,12 +132,14 @@ def test_machines():
 
 
 def test_machine_ids():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     machine_ids = client.get_machine_ids()
 
 
 def test_machine_by_id():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     machine = client.get_machine_by_id(123680)
     machine_atr = machine.__dict__
     assert machine_atr["id"]
@@ -123,12 +150,14 @@ def test_machine_by_id():
 
 
 def test_permissions():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     client.permissions()
 
 
 def test_orchestrator_auth_from_file():
-    client = Orchestrator(file="/Users/alvaro/Dev/python/orchestrator-py/tests/dummy_creds.json")
+    client = Orchestrator(
+        file="/Users/alvaro/Dev/python/orchestrator-py/tests/dummy_creds.json")
 
 
-test_orchestrator_auth_from_file()
+# test_orchestrator_auth_from_file()

@@ -4,7 +4,7 @@ from pprint import pprint
 from uuid import uuid4
 import uuid
 import json
-from orchestrator.exceptions import OrchestratorMissingParam
+from orchestrator.exceptions import OrchestratorMissingParameters
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
 from urllib.parse import urlencode
@@ -30,10 +30,14 @@ class Queue(OrchestratorHTTP):
     """
 
     def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, session=None, queue_name=None, queue_id=None, access_token=None):
-        super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
+        super().__init__(client_id=client_id, refresh_token=refresh_token,
+                         tenant_name=tenant_name, folder_id=folder_id, session=session)
         if not queue_id:
-            raise OrchestratorMissingParam(value="queue_id",
-                                           message="Required parameter(s) missing: queue_id")
+            raise OrchestratorMissingParameters(
+                message="Required parameter(s) missing: queue_id",
+                error_message="Required parameter(s) missing: queue_id"
+
+            )
         self.id = queue_id
         self.client_id = client_id
         self.name = queue_name
@@ -67,10 +71,10 @@ class Queue(OrchestratorHTTP):
         """
             Starts a given transaction
 
-            @machine_identifier: the machine's unique identifier
-            @specific_content: the specific content of the transaction
-            @reference: a reference from the specific content
-            @fields: a dictionary of additional fields to be added to the specific content
+            :param machine_identifier: the machine's unique identifier
+            :param specific_content: the specific content of the transaction
+            :param reference: a reference from the specific content
+            :param fields: a dictionary of additional fields to be added/modify to the specific content
         """
         ran_uuid = str(uuid4())
         batch_id = str(uuid.uuid4())
@@ -96,13 +100,16 @@ class Queue(OrchestratorHTTP):
                 format_body_start["transactionData"]["Reference"] = f"{ref[:-1]}#{batch_id}"
             except KeyError as err:
                 if reference in err.args:
-                    logging.error(f"Invalid reference: {reference} not found in SpecificContent")
-                    raise Exception(f"Invalid reference: {reference} not found in SpecificContent")
+                    logging.error(
+                        f"Invalid reference: {reference} not found in SpecificContent")
+                    raise Exception(
+                        f"Invalid reference: {reference} not found in SpecificContent")
             format_body_start["transactionData"]["SpecificContent"]["ItemID"] = value
             format_body_start["transactionData"]["SpecificContent"]["ReferenceID"] = ran_uuid
             format_body_start["transactionData"]["SpecificContent"]["BatchID"] = batch_id
         if fields:
-            format_body_start["transactionData"]["SpecificContent"].update(fields)
+            format_body_start["transactionData"]["SpecificContent"].update(
+                fields)
 
         url = f"{self.base_url}{endpoint}"
         data = self._post(url, body=format_body_start)
@@ -114,9 +121,9 @@ class Queue(OrchestratorHTTP):
             queue and a certain number of days (by default, hourly reports
             from the last day)
 
-            @num_days: the number of days before today from which to get
+            :param num_days: the number of days before today from which to get
             the processing records (default: 1)
-            @options: dictionary of odata filtering options
+            :param options: dictionary of odata filtering options
         """
         endpoint = "/QueueProcessingRecords"
         query = f"daysNo={num_days},queueDefinitionId={self.id}"
@@ -133,9 +140,8 @@ class Queue(OrchestratorHTTP):
         """
             Gets a single Item by item id
 
-            @item_id: the id of the item
-            ========
-            @returns: an Item object with the specified item id
+            :param item_id: the id of the item
+
         """
         endpoint = f"/QueueItems({item_id})"
         url = f"{self.base_url}{endpoint}"
@@ -146,30 +152,26 @@ class Queue(OrchestratorHTTP):
         """
             Returns a list of queue items of the given queue
 
-            @options: dictionary of odata filtering options ($filter tag will be overwritten)
-            =========
-            @returns: a list of QueueItem objects of the given queue (Maximum number of results: 1000)
+            :param options: dictionary of odata filtering options ($filter tag will be overwritten)
         """
         endpoint = "/QueueItems"
         odata_filter = {}
         if options and ("$filter" in options):
-            # print(options["$filter"])
-            odata_filter = {"$filter": f"{options['$filter']} and QueueDefinitionId eq {self.id}"}
+            odata_filter = {
+                "$filter": f"{options['$filter']} and QueueDefinitionId eq {self.id}"}
         elif not options:
-            odata_filter = {}
-        else:
             odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and Status in ('New', 'Abandoned', 'Retried', 'Successful')"}
-        # print(odata_filter)
+        else:
+            odata_filter = {
+                "$filter": f"QueueDefinitionId eq {self.id} and Status in ('New', 'Abandoned', 'Retried', 'Successful')"}
         if options is not None:
             for k, v in options.items():
                 odata_filter.update({k: v})
-        # print(odata_filter)
 
         query_params = urlencode(odata_filter)
         url = f"{self.base_url}{endpoint}?{query_params}"
         data = self._get(url)
         odata_count = data["@odata.count"]
-        # print(f"@odata.count is {odata_count}")
         logging.debug(f"@odata.count is {odata_count}")
         values = data["value"]
         count = len(values)
@@ -177,12 +179,11 @@ class Queue(OrchestratorHTTP):
         # if odata_count is higher, paginate through the items
         i = 1
         while count < odata_count:
-            logging.info("OData count is higher than the supported maximum number of items. Starting pagination")
+            logging.info(
+                "OData count is higher than the supported maximum number of items. Starting pagination")
             if options is not None:
                 for k, v in options.items():
                     odata_filter.update({k: v})
-            # skip formula
-            # print("Skip "+str(skip))
             skip += 1000
             odata_filter.update({"$skip": skip})
             query_params = urlencode(odata_filter)
@@ -191,7 +192,8 @@ class Queue(OrchestratorHTTP):
             values += aux_data
             count = len(values)
             i += 1
-        logging.info(f"Length of the requested list of items is: {len(values)}")
+        logging.info(
+            f"Length of the requested list of items is: {len(values)}")
 
         # filt_data = data['value']
         if len(odata_filter) < 2:
@@ -202,7 +204,7 @@ class Queue(OrchestratorHTTP):
     def filter_by_reference(self, reference, num_days=2):
         """
         Returns a list of references of items which 
-        have status Failed, Retried or Successful from the past number of days
+        have status New, Successful, Retried or Abandoned from the past number of days
 
         :param num_days - number of days to query the queue from (default: 2) 
         """
@@ -213,22 +215,23 @@ class Queue(OrchestratorHTTP):
 
         items = self.get_queue_items(options=filt_options)
         try:
-            aux_list = [[i["SpecificContent"][reference], i["CreationTime"], i["Status"]] for i in items]
+            aux_list = [[i["SpecificContent"][reference],
+                         i["CreationTime"], i["Status"]] for i in items]
             logging.info(f"Length of aux_list: {len(aux_list)}")
             INDEXES = []
             for i, item in enumerate(aux_list):
                 creation_date = item[1]
                 try:
-                    diff = tod - datetime.timedelta(days=datetime.datetime.strptime(creation_date, '%Y-%m-%dT%H:%M:%S.%fZ').day)
+                    fmt_date = datetime.datetime.strptime(creation_date, '%Y-%m-%dT%H:%M:%S.%fZ')
+
                 except ValueError:
-                    # raise
-                    diff = tod - datetime.timedelta(days=datetime.datetime.strptime(creation_date, '%Y-%m-%dT%H:%M:%SZ').day)
-                if diff.day > num_days and diff.day != 31:
+                    fmt_date = datetime.datetime.strptime(creation_date, '%Y-%m-%dT%H:%M:%SZ')
+                if (tod - fmt_date).days > num_days:
                     INDEXES.append(i)
             if INDEXES:
                 for index in sorted(INDEXES, reverse=True):
                     del aux_list[index]
-            logging.info(f"There is a total of {len(aux_list)} items")
+            logging.info(f"There is a total of {len(aux_list)} items from {num_days} ago with status Successful, New, Retried or Abandoned")
             return aux_list
         except KeyError as err:
             raise err
@@ -239,7 +242,8 @@ class Queue(OrchestratorHTTP):
         as indicated in the argument.
         """
         endpoint = "/QueueItems"
-        odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and Status eq '{status}'"}
+        odata_filter = {
+            "$filter": f"QueueDefinitionId eq {self.id} and Status eq '{status}'"}
         query_params = urlencode(odata_filter)
         url = f"{self.base_url}{endpoint}?{query_params}"
         data = self._get(url)
@@ -312,7 +316,8 @@ class Queue(OrchestratorHTTP):
         uipath_svc = "/UiPathODataSvc.AddQueueItem"
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         if not specific_content:
-            raise OrchestratorMissingParam(value="specific_content", message="specific content cannot be null")
+            raise OrchestratorMissingParameters(message="specific content cannot be null",
+                                                error_message="Specific conctent cannot be left bland. Received 'None'")
         if reference:
             try:
                 ref = specific_content[reference]
@@ -327,10 +332,8 @@ class Queue(OrchestratorHTTP):
                 "Name": self.name,
                 "SpecificContent": specific_content,
                 "Reference": ref_uuid,
-                # "Progress": "In Progres"
             }
         }
-        # pprint(format_body_queue)
         data = self._post(url, body=format_body_queue)
         return QueueItem(self.client_id, self.refresh_token, self.tenant_name, self.folder_id, self.folder_name, self.name, self.id, self.session, data["Id"], data["SpecificContent"], data["Reference"], data["Status"], access_token=self.access_token)
 
@@ -353,7 +356,8 @@ class Queue(OrchestratorHTTP):
                 return formatted_sp_content
             except KeyError as err:
                 if reference in err.args:
-                    raise Exception(f"Invalid reference: {reference} not found in sp_content")
+                    raise Exception(
+                        f"Invalid reference: {reference} not found in sp_content")
         else:
             ref_uuid = {"Reference": f"{ran_uuid}"}
             sp_content.update({"ReferenceID": ran_uuid})
@@ -410,7 +414,8 @@ class Queue(OrchestratorHTTP):
         uipath_svc = "/UiPathODataSvc.BulkAddQueueItems"
         url = f"{self.base_url}{endpoint}{uipath_svc}"
         if not specific_contents:
-            raise OrchestratorMissingParam(value="specific_contents", message="specific contents cannot be null")
+            raise OrchestratorMissingParameters(message="specific contents cannot be null",
+                                                error_message="Specific contents cannot be left blanck, receibed 'None'")
 
         batch_id = str(uuid4())
         format_body_queue = {
@@ -430,7 +435,8 @@ class Queue(OrchestratorHTTP):
 
         """
         if not description:
-            raise OrchestratorMissingParam(value="description", message="description cannot be null")
+            raise OrchestratorMissingParameters(
+                message="description cannot be null", error_message="Description cannot be left blank, received 'None'")
         endpoint = f"/QueueDefinitions({self.id})"
         url = f"{self.base_url}{endpoint}"
         format_body_queue = {

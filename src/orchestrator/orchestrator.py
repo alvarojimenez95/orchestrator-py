@@ -8,7 +8,7 @@ from orchestrator.orchestrator_library import Library
 from orchestrator.orchestrator_process import Process
 from orchestrator.orchestrator_machine import Machine
 from pprint import pprint
-
+from orchestrator.exceptions import OrchestratorFolderNotFound
 __all__ = ["Orchestrator"]
 
 """
@@ -45,7 +45,8 @@ class Orchestrator(OrchestratorHTTP):
         #     )
         # else:
         #     self.client_id = client_id
-        super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session, file=file)
+        super().__init__(client_id=client_id, refresh_token=refresh_token,
+                         tenant_name=tenant_name, folder_id=folder_id, session=session, file=file)
         if file:
             self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
 
@@ -123,7 +124,11 @@ class Orchestrator(OrchestratorHTTP):
         """
         ids = self.get_folder_ids()
         self.folder_id = int(folder_id)
-        folder_name = ids[int(folder_id)]
+        try:
+            folder_name = ids[int(folder_id)]
+        except KeyError:
+            raise OrchestratorFolderNotFound(
+                message=f"Folder {folder_id} does not exist")
         return Folder(client_id=self.client_id, refresh_token=self.refresh_token, tenant_name=self.tenant_name,  session=self.session, folder_name=folder_name, folder_id=int(folder_id), access_token=self.access_token)
 
     def get_folder_by_name(self, folder_name):
@@ -153,9 +158,8 @@ class Orchestrator(OrchestratorHTTP):
         """
         Gets all the libraries of a given organization
 
-        @options: a dictionary of odata filtering options
-        ========
-        @returns: a list of Libraries of the given organization
+        :param options: a dictionary of odata filtering options
+        :param returns: a list of Libraries of the given organization
         """
         endpoint = "/Libraries"
         if options:
@@ -184,7 +188,7 @@ class Orchestrator(OrchestratorHTTP):
         Returns a dictionary of the machine keys and their
         names 
 
-        @options: dictionary of odata filtering options 
+        :param options: dictionary of odata filtering options 
         """
         machines = self.get_machines(options)
         ids = {}
@@ -196,7 +200,7 @@ class Orchestrator(OrchestratorHTTP):
         """
         Returns a single machine by its id 
 
-        @machine_id: the id of the machine 
+        :param machine_id: the id of the machine 
         """
 
         endpoint = f"/Machines({machine_id})"

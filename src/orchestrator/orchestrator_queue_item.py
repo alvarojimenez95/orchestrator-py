@@ -1,5 +1,5 @@
 from orchestrator.orchestrator_http import OrchestratorHTTP
-from orchestrator.exceptions import OrchestratorMissingParam
+from orchestrator.exceptions import OrchestratorMissingParameters
 import requests
 
 __all__ = ["QueueItem"]
@@ -11,8 +11,11 @@ class QueueItem(OrchestratorHTTP):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id,
                          session=session)
         if not item_id:
-            raise OrchestratorMissingParam(value="item id",
-                                           message="Required parameter(s) missing: item_id")
+            raise OrchestratorMissingParameters(
+                message="Required parameter(s) missing: item_id",
+                error_message="Required parameter(s) missing: item_id"
+
+            )
         self.specific_content = content
         self.client_id = client_id
         self.access_token = access_token
@@ -94,7 +97,7 @@ class QueueItem(OrchestratorHTTP):
             item (note: it must be already In Progress)
         """
         if not status:
-            raise OrchestratorMissingParam(value="status", message="status cannot be None")
+            raise OrchestratorMissingParameters(message="status cannot be None", error_message="Expected <status : str>, received None")
         endpoint = f"/QueueItems({self.id})"
         uipath_svc = "/UiPathODataSvc.SetTransactionProgress"
         url = f"{self.base_url}{endpoint}{uipath_svc}"

@@ -29,44 +29,62 @@ else:
 
 
 def test_queue_info():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127484)
     queue.info()
 
 
+def test_get_queue_items():
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    queue = client.get_folder_by_id(PROD_FOLDER_ID).get_queue_by_id(127136)
+    options = {"$select": "Id"}
+    queue_items = queue.filter_by_reference(reference="integration_id", num_days=3)
+    print(len(queue_items))
+    for item in queue_items:
+        if item[2] in ["Successful"]:
+            print(item)
+
+
+test_get_queue_items()
+
+
 def test_processing_records():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127484)
     queue.get_processing_records(num_days=2)
 
 
 def test_get_queue_items():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PROD_FOLDER_ID).get_queue_by_id(127136)
     queue.get_queue_items()
 
 
 def test_filter_by_reference():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PROD_FOLDER_ID).get_queue_by_id(127136)
-    items = queue.filter_by_reference(reference="integration_id", num_days=2)
-    # print(len(items))
+    items = queue.filter_by_reference(reference="integration_id", num_days=5)
+    print(len(items))
     for item in items:
         assert item[2] in {"Failed", "Retried", "Successful"}
 
 
 def test_check_duplicate():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PROD_FOLDER_ID).get_queue_by_id(127136)
     duplicate = queue.check_duplicate(reference="anael-128-104236")
     print(duplicate)
 
 
-# test_filter_by_reference()
-
-
 def test_get_items_by_status():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127484)
     items = queue.get_queue_items_by_status(status="Successful")
     for item in items:
@@ -83,14 +101,16 @@ def test_get_items_by_status():
 
 
 def test_get_queue_item_ids():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127484)
     item_ids = queue.get_queue_items_ids()
     assert item_ids
 
 
 def test_get_queue_item_by_id():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127484)
     item = queue.get_item_by_id(276927010)
     item_atr = item.__dict__
@@ -109,7 +129,8 @@ def test_get_queue_item_by_id():
 
 
 def test_add_queue_item():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129)
     sp_content = {
         "Name": "Alvaro",
@@ -129,7 +150,8 @@ def test_add_queue_item():
 
 
 def test_bulk_add_queue_items():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PRE_FOLDER_ID).get_queue_by_id(127129)
     sp_content1 = {
         "Name": "Alvaro",
@@ -139,7 +161,9 @@ def test_bulk_add_queue_items():
         "Name": "John",
         "Surname": "Doe"
     }
-    data_ref = queue.bulk_create_items(specific_contents=[sp_content1, sp_content2], reference="Name")
-    data = queue.bulk_create_items(specific_contents=[sp_content1, sp_content2])
+    data_ref = queue.bulk_create_items(
+        specific_contents=[sp_content1, sp_content2], reference="Name")
+    data = queue.bulk_create_items(
+        specific_contents=[sp_content1, sp_content2])
     assert data_ref["Success"]
     assert data["Success"]

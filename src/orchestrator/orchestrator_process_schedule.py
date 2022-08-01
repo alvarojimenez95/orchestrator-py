@@ -1,5 +1,5 @@
 from orchestrator.orchestrator_http import OrchestratorHTTP
-from orchestrator.exceptions import OrchestratorMissingParam
+from orchestrator.exceptions import OrchestratorMissingParameters
 import requests
 
 __all__ = ["ProcessSchedule"]
@@ -9,8 +9,11 @@ class ProcessSchedule(OrchestratorHTTP):
     def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, session=None, process_id=None, process_name=None, access_token=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id)
         if not process_id:
-            raise OrchestratorMissingParam(value="process_id",
-                                           message="Required parameter(s) missing: process_id")
+            raise OrchestratorMissingParameters(
+                message="Required parameter(s) missing: process_id",
+                error_message="Required parameter(s) missing: process_id"
+
+            )
         self.client_id = client_id
         self.tenant_name = tenant_name
         self.access_token = access_token

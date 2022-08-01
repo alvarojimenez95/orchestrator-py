@@ -6,7 +6,12 @@ import json
 import string
 import logging
 
-from orchestrator.exceptions import OrchestratorAuthException, OrchestratorMissingParam
+from orchestrator.exceptions import (
+    OrchestratorAuthException,
+    OrchestratorInvalidODataException,
+    OrchestratorMissingParameters,
+    OrchestratorInsufficientPermissions
+)
 
 
 class OrchestratorHTTP(object):
@@ -24,7 +29,8 @@ class OrchestratorHTTP(object):
         tenant_name=None,
         folder_id=None,
         session=None,
-        file=None
+        file=None,
+
 
     ):
         if not client_id or not refresh_token or not tenant_name:
@@ -36,13 +42,15 @@ class OrchestratorHTTP(object):
                     self.refresh_token = data["refresh_token"]
                     self.tenant_name = data["tenant_name"]
                     self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
-                    # self.folder_id = data["folder_id"]
                 except KeyError as err:
-                    print(err)
-                    raise
+                    logging.error(str(err))
+                    raise err
             else:
-                raise OrchestratorAuthException(
-                    value=None, message="client id and/or refresh token and/or tenant name cannot be left empty"
+                logging.error(
+                    "Invalid credentials; missing parameters client id and/or refresh token and/or tenant name.")
+                raise OrchestratorMissingParameters(
+                    message="Invalid credentials: client id and/or refresh token and/or tenant name cannot be left empty",
+                    error_message="Missing parameters: client id and/or refresh token and/or tenant name"
                 )
 
         else:
@@ -69,16 +77,16 @@ class OrchestratorHTTP(object):
         }
         headers = {"Content-Type": "application/json"}
         url = f"{self.account_url}{self.oauth_endpoint}"
-        try:
-            r = self.session.post(url=url, data=json.dumps(body), headers=headers)
-            print(r.url)
+        r = self.session.post(url=url, data=json.dumps(body), headers=headers)
+        if r.status_code != 200:
             token_data = r.json()
-            token = token_data["access_token"]
-            expiracy = token_data["expires_in"]
-            self.access_token = token
-            self._token_expires = expiracy
-        except Exception as err:
-            print(err)
+            raise OrchestratorAuthException(
+                message="Authentication error: invalid credentials", error_message=token_data["error_description"])
+        token_data = r.json()
+        token = token_data["access_token"]
+        expiracy = token_data["expires_in"]
+        self.access_token = token
+        self._token_expires = expiracy
 
     def _auth_header(self):
         return {"Authorization": f"Bearer {self.access_token}"}
@@ -89,46 +97,55 @@ class OrchestratorHTTP(object):
 
     def _folder_header(self):
         if not self.folder_id:
-            raise OrchestratorAuthException(value="folder id", message="folder cannot be null")
+            raise OrchestratorMissingParameters(
+                message="Folder cannot be null", error_message="Folder id cannot be left blank.")
         return {"X-UIPATH-OrganizationUnitId": f"{self.folder_id}"}
 
     def _internal_call(self, method, endpoint, *args, **kwargs):
-        # pprint(self.folder_id)
-        # if self.expired:
-        #     logging.debug("Token has expired")
-        #     self._get_token()
-        #     self.expired = False
-
         headers = self._auth_header()
-        # pprint(headers)
         if method in {"POST"}:
             headers.update(self._content_header())
         if self.folder_id:
             headers.update(self._folder_header())
         try:
-            # print(endpoint)
             if kwargs:
-                # pprint(kwargs)
                 item_data = kwargs['body']['body']
-                # pprint(json.dumps(item_data))
-                # pprint(item_data)
-                r = self.session.request(method, endpoint, json=item_data, headers=headers)
+                r = self.session.request(
+                    method, endpoint, json=item_data, headers=headers)
+                if r.status_code not in range(200, 400):
+                    if r.status_code == 400:
+                        res_data = r.json()
+                        if "Invalid OData" in res_data["message"]:
+                            raise OrchestratorInvalidODataException(
+                                message="Invalid OData parameters", error_message=res_data["message"])
+                        else:
+                            raise OrchestratorInsufficientPermissions(
+                                message="User has insufficient permissions to access this resource", error_message=res_data["message"])
+                    else:
+                        print(r.json())
             else:
                 r = self.session.request(method, endpoint, headers=headers)
-                # print(r.json())
                 if r.status_code == 401:
                     self._get_token()
                     headers = self._auth_header()
-                    r_retry = self.session.request(method, endpoint, headers=headers)
+                    r_retry = self.session.request(
+                        method, endpoint, headers=headers)
                     return r_retry.json()
                 if r.status_code not in range(200, 400):
-                    logging.error(f"An error ocurred.\nStatus code: {r.status_code}")
-                    # print(r.json())
-            # print(endpoint)
-            print(r.url)
-            logging.debug(f"{r.status_code} ---- {r.url}")
+                    logging.error(
+                        f"An error ocurred.\nStatus code: {r.status_code}")
+                    if r.status_code == 400:
+                        res_data = r.json()
+                        if "Invalid OData" in res_data["message"]:
+                            raise OrchestratorInvalidODataException(
+                                message="Invalid OData parameters", error_message=res_data["message"])
+                        else:
+                            raise OrchestratorInsufficientPermissions(
+                                message="User has insufficient permissions to access this resource", error_message=res_data["message"])
+                    else:
+                        print(r.json())
+                        r.raise_for_status()
             try:
-                # pprint(r.json())
                 return r.json()
             except requests.exceptions.JSONDecodeError:
                 return r.text

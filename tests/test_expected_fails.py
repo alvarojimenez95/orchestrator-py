@@ -9,7 +9,7 @@ from orchestrator.orchestrator_process import Process
 from orchestrator.orchestrator_process_schedule import ProcessSchedule
 from orchestrator.orchestrator_queue import Queue
 from orchestrator.orchestrator_queue_item import QueueItem
-from orchestrator.exceptions import OrchestratorAuthException, OrchestratorFormatException, OrchestratorMissingParam
+from orchestrator.exceptions import OrchestratorAuthException, OrchestratorFormatException, OrchestratorMissingParameters
 from dotenv import load_dotenv
 import os
 from pprint import pprint
@@ -48,11 +48,12 @@ def test_orchestrator_init_xfails():
 
 @pytest.mark.xfail(raises=OrchestratorAuthException)
 def test_orchestrato_folder_xfail():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
+    client = Orchestrator(client_id=CLIENT_ID,
+                          refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     client._folder_header()
 
 
-@pytest.mark.xfail(raises=OrchestratorMissingParam)
+@pytest.mark.xfail(raises=OrchestratorMissingParameters)
 def test_xfail_asset_init():
     Asset(
         client_id="1234",
@@ -66,7 +67,7 @@ def test_xfail_asset_init():
     )
 
 
-@pytest.mark.xfail(raises=OrchestratorMissingParam)
+@pytest.mark.xfail(raises=OrchestratorMissingParameters)
 def test_xfail_folder_init():
     Folder(
         client_id="1234",
@@ -78,7 +79,7 @@ def test_xfail_folder_init():
     )
 
 
-@pytest.mark.xfail(raises=OrchestratorMissingParam)
+@pytest.mark.xfail(raises=OrchestratorMissingParameters)
 def test_xfail_folder_init():
     Folder(
         client_id="1234",
@@ -90,7 +91,7 @@ def test_xfail_folder_init():
     )
 
 
-@pytest.mark.xfail(raises=OrchestratorMissingParam)
+@pytest.mark.xfail(raises=OrchestratorMissingParameters)
 def test_xfail_job_init():
     Job(
         client_id="1234",
@@ -104,7 +105,7 @@ def test_xfail_job_init():
     )
 
 
-@pytest.mark.xfail(raises=OrchestratorMissingParam)
+@pytest.mark.xfail(raises=OrchestratorMissingParameters)
 def test_xfail_library_init():
     Library(
         client_id="1234",
@@ -116,7 +117,7 @@ def test_xfail_library_init():
     )
 
 
-@pytest.mark.xfail(raises=OrchestratorMissingParam)
+@pytest.mark.xfail(raises=OrchestratorMissingParameters)
 def test_xfail_log_init():
     Log(
         client_id="1234",
@@ -128,7 +129,7 @@ def test_xfail_log_init():
     )
 
 
-@pytest.mark.xfail(raises=OrchestratorMissingParam)
+@pytest.mark.xfail(raises=OrchestratorMissingParameters)
 def test_xfail_machine_init():
     Machine(
         client_id="1234",
@@ -140,7 +141,7 @@ def test_xfail_machine_init():
     )
 
 
-@pytest.mark.xfail(raises=OrchestratorMissingParam)
+@pytest.mark.xfail(raises=OrchestratorMissingParameters)
 def test_xfail_process_schedule_init():
     ProcessSchedule(
         client_id="1234",
@@ -152,7 +153,7 @@ def test_xfail_process_schedule_init():
     )
 
 
-@pytest.mark.xfail(raises=OrchestratorMissingParam)
+@pytest.mark.xfail(raises=OrchestratorMissingParameters)
 def test_xfail_process_init():
     Process(
         client_id="1234",
@@ -164,7 +165,7 @@ def test_xfail_process_init():
     )
 
 
-@pytest.mark.xfail(raises=OrchestratorMissingParam)
+@pytest.mark.xfail(raises=OrchestratorMissingParameters)
 def test_xfail_queue_item_init():
     QueueItem(
         client_id="1234",
@@ -176,7 +177,7 @@ def test_xfail_queue_item_init():
     )
 
 
-@pytest.mark.xfail(raises=OrchestratorMissingParam)
+@pytest.mark.xfail(raises=OrchestratorMissingParameters)
 def test_xfail_queue_init():
     Queue(
         client_id="1234",

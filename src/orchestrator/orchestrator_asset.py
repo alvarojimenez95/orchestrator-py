@@ -1,6 +1,6 @@
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
-from orchestrator.exceptions import OrchestratorMissingParam
+from orchestrator.exceptions import OrchestratorMissingParameters
 
 """
     Asset class for dealing with Orchestrator requests which involve a given asset
@@ -41,8 +41,9 @@ class Asset(OrchestratorHTTP):
         """Constructor"""
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
         if not asset_id:
-            raise OrchestratorMissingParam(value="asset_id",
-                                           message="Required parameter(s) missing: asset_id")
+            raise OrchestratorMissingParameters(
+                message="Required parameter(s) missing: asset_id",
+                error_message="Required parameter missing: 'asset_id'")
         self.tenant_name = tenant_name
         self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
         self.folder_id = folder_id

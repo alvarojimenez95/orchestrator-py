@@ -1,15 +1,17 @@
 from datetime import datetime
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
-from orchestrator.exceptions import OrchestratorMissingParam
+from orchestrator.exceptions import OrchestratorMissingParameters
 
 
 class Log(OrchestratorHTTP):
     def __init__(self, client_id, refresh_token, tenant_name, folder_id=None, folder_name=None, session=None, msg=None, trace=None, key=None, stamp=None):
         super().__init__(client_id=client_id, refresh_token=refresh_token, tenant_name=tenant_name, folder_id=folder_id, session=session)
         if not key:
-            raise OrchestratorMissingParam(value="job key",
-                                           message="Required parameter(s) missing: key")
+            raise OrchestratorMissingParameters(
+                message="Required parameter(s) missing: key",
+                error_message="Required parameter(s) missing: key"
+            )
         self.tenant_name = tenant_name
         self.base_url = f"{self.cloud_url}/{self.tenant_name}/JTBOT/odata"
         self.folder_id = folder_id

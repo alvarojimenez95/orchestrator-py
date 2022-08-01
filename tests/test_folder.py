@@ -10,6 +10,8 @@ if LOCAL_TEST:
     load_dotenv()
     CLIENT_ID = os.getenv('CLIENT_ID')
     REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')
+    REFRESH_TOKEN2 = os.getenv('REFRESH_TOKEN2')
+
     TENANT_NAME = os.getenv('TENANT_NAME')
     FOLDER_ID = os.getenv('FOLDER_ID')
     QUEUE_ID = os.getenv('QUEUE_ID')
@@ -82,8 +84,8 @@ def test_folder_queues():
 
 
 def test_folder_info():
-    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
-    info = client.get_folder_by_id(PRE_FOLDER_ID).info()
+    client = Orchestrator(client_id=CLIENT_ID, refresh_token=REFRESH_TOKEN2, tenant_name=TENANT_NAME)
+    info = client.get_folder_by_id(PROD_FOLDER_ID).info()
     assert info["DisplayName"]
     assert info["FeedType"]
     assert info["FullyQualifiedName"]
@@ -93,6 +95,9 @@ def test_folder_info():
     assert info["Key"]
     assert info["PermissionModel"]
     assert info["ProvisionType"]
+
+
+test_folder_info()
 
 
 def test_folder_queue_ids():
