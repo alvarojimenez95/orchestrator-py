@@ -46,8 +46,7 @@ def test_get_queue_items():
         if item[2] in ["Successful"]:
             print(item)
 
-
-test_get_queue_items()
+# test_get_queue_items()
 
 
 def test_processing_records():
@@ -78,8 +77,11 @@ def test_check_duplicate():
     client = Orchestrator(client_id=CLIENT_ID,
                           refresh_token=REFRESH_TOKEN, tenant_name=TENANT_NAME)
     queue = client.get_folder_by_id(PROD_FOLDER_ID).get_queue_by_id(127136)
-    duplicate = queue.check_duplicate(reference="anael-128-104236")
+    duplicate = queue.check_duplicate(reference="anael-A35-104585")
     print(duplicate)
+
+
+test_check_duplicate()
 
 
 def test_get_items_by_status():

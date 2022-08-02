@@ -115,6 +115,8 @@ class OrchestratorHTTP(object):
                 if r.status_code not in range(200, 400):
                     if r.status_code == 400:
                         res_data = r.json()
+                        print(r.url)
+
                         if "Invalid OData" in res_data["message"]:
                             raise OrchestratorInvalidODataException(
                                 message="Invalid OData parameters", error_message=res_data["message"])
@@ -135,6 +137,8 @@ class OrchestratorHTTP(object):
                     logging.error(
                         f"An error ocurred.\nStatus code: {r.status_code}")
                     if r.status_code == 400:
+                        print(r.url)
+
                         res_data = r.json()
                         if "Invalid OData" in res_data["message"]:
                             raise OrchestratorInvalidODataException(

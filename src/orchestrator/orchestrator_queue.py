@@ -7,6 +7,7 @@ import json
 from orchestrator.exceptions import OrchestratorMissingParameters
 from orchestrator.orchestrator_http import OrchestratorHTTP
 import requests
+import datetime
 from urllib.parse import urlencode
 
 from orchestrator.orchestrator_queue_item import QueueItem
@@ -157,17 +158,18 @@ class Queue(OrchestratorHTTP):
         endpoint = "/QueueItems"
         odata_filter = {}
         if options and ("$filter" in options):
+            print(options["$filter"])
             odata_filter = {
-                "$filter": f"{options['$filter']} and QueueDefinitionId eq {self.id}"}
+                "$filter": f"QueueDefinitionId eq {self.id} and " + f"{options['$filter']}"}
         elif not options:
             odata_filter = {"$filter": f"QueueDefinitionId eq {self.id} and Status in ('New', 'Abandoned', 'Retried', 'Successful')"}
         else:
             odata_filter = {
                 "$filter": f"QueueDefinitionId eq {self.id} and Status in ('New', 'Abandoned', 'Retried', 'Successful')"}
-        if options is not None:
+        if (options is not None) and ("$filter" not in options):
             for k, v in options.items():
                 odata_filter.update({k: v})
-
+        pprint(odata_filter)
         query_params = urlencode(odata_filter)
         url = f"{self.base_url}{endpoint}?{query_params}"
         data = self._get(url)
@@ -281,8 +283,8 @@ class Queue(OrchestratorHTTP):
             False.
         """
         filt_items = self.get_queue_items(
-            options={"$filter": f"contains(Reference, '{reference}') and Status in ('Successful', 'New', 'Retried', 'Abandoned')"})
-
+            options={"$filter": f"contains(Reference, '{reference}') and Status in ('Successful', 'New', 'Retried', 'Abandoned')"}
+        )
         if len(filt_items) > 0:
             return filt_items[0]
         else:
